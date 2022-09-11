@@ -94,7 +94,7 @@ Graphics& Window::Gfx()
 LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	static WindowsMessageMap mm;
-	OutputDebugString(mm(msg, lParam, wParam).c_str());
+	OutputDebugString(mm.Parse(msg, lParam, wParam).c_str());
 
 	switch (msg)
 	{
