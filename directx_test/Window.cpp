@@ -55,7 +55,7 @@ Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
 
 	ShowWindow(currHwnd, SW_SHOWDEFAULT);
 
-	pGfx = std::make_unique<Graphics>(currHwnd);
+	pGfx = std::make_unique<Graphics>(currHwnd, width, height);
 }
 
 Window::~Window()

@@ -7,7 +7,7 @@
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Window wnd(1920, 1080, L"nu window");
-	wnd.Gfx().SetFullscreenState(true);
+	//wnd.Gfx().SetFullscreenState(true);
 
 	MSG msg{};
 	BOOL gResult;
@@ -29,6 +29,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			const float b = sin(log2(sine)) / 2.f + 0.5f;
 
 			wnd.Gfx().ClearBuffer(r, g, b);
+
+			wnd.Gfx().RenderTriangle();
+
 			wnd.Gfx().EndFrame();
 		}
 	}
