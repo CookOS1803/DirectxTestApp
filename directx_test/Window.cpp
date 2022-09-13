@@ -4,12 +4,12 @@
 
 Window::WindowClass Window::WindowClass::wndClassInstance {};
 
-const wchar_t* Window::WindowClass::GetName() noexcept
+const wchar_t* Window::WindowClass::Name() noexcept
 {
 	return wndClassName;
 }
 
-HINSTANCE Window::WindowClass::GetInstance() noexcept
+HINSTANCE Window::WindowClass::HInstance() noexcept
 {
 	return wndClassInstance.hInstance;
 }
@@ -23,19 +23,19 @@ Window::WindowClass::WindowClass() noexcept
 	wc.lpfnWndProc = HandleMsgSetup;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hInstance = GetInstance();
+	wc.hInstance = HInstance();
 	wc.hIcon = nullptr;
 	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = GetName();
+	wc.lpszClassName = Name();
 	wc.lpszMenuName = nullptr;
 	RegisterClassEx(&wc);
 }
 
 Window::WindowClass::~WindowClass()
 {
-	UnregisterClass(wndClassName, GetInstance());
+	UnregisterClass(wndClassName, HInstance());
 }
 
 Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
@@ -51,7 +51,7 @@ Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
 
 	AdjustWindowRect(&wr, dwStyle, FALSE);
 
-	currHwnd = CreateWindow(WindowClass::GetName(), name, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
+	currHwnd = CreateWindow(WindowClass::Name(), name, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::HInstance(), this);
 
 	ShowWindow(currHwnd, SW_SHOWDEFAULT);
 

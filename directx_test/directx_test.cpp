@@ -6,7 +6,8 @@
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	Window wnd(1600, 900, L"nu window");
+	Window wnd(1920, 1080, L"nu window");
+	wnd.Gfx().SetFullscreenState(true);
 
 	MSG msg{};
 	BOOL gResult;

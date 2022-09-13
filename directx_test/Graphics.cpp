@@ -60,6 +60,11 @@ Graphics::~Graphics()
 	if (pTarget) pTarget->Release();
 }
 
+void Graphics::SetFullscreenState(bool state)
+{
+	pSwap->SetFullscreenState(state, nullptr);
+}
+
 void Graphics::EndFrame()
 {
 	pSwap->Present(1u, 0u);

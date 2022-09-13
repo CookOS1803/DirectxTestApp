@@ -9,8 +9,8 @@ private:
 	class WindowClass
 	{
 	public:
-		static const wchar_t* GetName() noexcept;
-		static HINSTANCE GetInstance() noexcept;
+		static const wchar_t* Name() noexcept;
+		static HINSTANCE HInstance() noexcept;
 
 	private:
 		WindowClass() noexcept;

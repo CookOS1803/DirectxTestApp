@@ -10,6 +10,7 @@ public:
 	Graphics& operator=(const Graphics&) = delete;
 	~Graphics();
 
+	void SetFullscreenState(bool state);
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 
