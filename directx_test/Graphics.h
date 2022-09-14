@@ -2,9 +2,15 @@
 #include "NormWin.h"
 #include <d3d11.h>
 #include <xnamath.h>
+#include <initializer_list>
+#include <vector>
 
 struct SimpleVertex
 {
+	SimpleVertex(float x, float y, float z) : position(x, y, z)
+	{
+	}
+
 	XMFLOAT3 position;
 };
 
@@ -20,7 +26,8 @@ public:
 	void SetFullscreenState(bool state);
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
-	void RenderTriangle();
+	void Render();
+	void CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertices);
 
 	static HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 
@@ -31,7 +38,6 @@ private:
 	[[nodiscard]] ID3DBlob* CompileAndCreateVertexShader();
 	void DefineAndCreateInputLayout(ID3DBlob* pVSBlob);
 	void CompileAndCreatePixelShader();
-	void CreateVertexBuffer();
 
 	ID3D11Device* pDevice = nullptr;
 	IDXGISwapChain* pSwap = nullptr;
@@ -40,5 +46,7 @@ private:
 
 	ID3D11VertexShader* pVertexShader = nullptr;
 	ID3D11PixelShader* pPixelShader = nullptr;
+
+	std::vector<SimpleVertex> vertices;
 };
 

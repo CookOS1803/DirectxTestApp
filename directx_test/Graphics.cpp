@@ -1,6 +1,7 @@
 #include "Graphics.h"
 #include <d3dx11.h>
 #include <d3dcompiler.h>
+#include <array>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
 {
@@ -10,7 +11,14 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	auto blob = CompileAndCreateVertexShader();
 	DefineAndCreateInputLayout(blob);
 	CompileAndCreatePixelShader();
-	CreateVertexBuffer();
+	//CreateVertexBuffer({
+	//	{0.f, 0.f, 0.5f},
+	//	{0.5f, 1.f, 0.5f},
+	//	{1.f, 0.f, 0.5f},
+	//	{0.5f, -1.f, 0.5f}
+	//});
+
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 }
 
 void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd)
@@ -140,25 +148,20 @@ void Graphics::CompileAndCreatePixelShader()
 		exit(-2);
 }
 
-void Graphics::CreateVertexBuffer()
+void Graphics::CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertices)
 {
-	SimpleVertex vertices[] =
-	{
-		XMFLOAT3(0.0f, 0.5f, 0.5f),
-		XMFLOAT3(0.5f, -0.5f, 0.5f),
-		XMFLOAT3(-0.5f, -0.5f, 0.5f),
-	};
+	vertices = newVertices;
 
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 3;
+	bd.ByteWidth = sizeof(SimpleVertex) * vertices.size();
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 	bd.MiscFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA InitData{};
 	ID3D11Buffer* pVertexBuffer = nullptr;
-	InitData.pSysMem = vertices;
+	InitData.pSysMem = vertices.data();
 	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pVertexBuffer);
 	if (FAILED(hr))
 		exit(-3);
@@ -166,8 +169,6 @@ void Graphics::CreateVertexBuffer()
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 	pContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
-
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 Graphics::~Graphics()
@@ -222,9 +223,9 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	pContext->ClearRenderTargetView(pTarget, color);
 }
 
-void Graphics::RenderTriangle()
+void Graphics::Render()
 {
 	pContext->VSSetShader(pVertexShader, NULL, 0);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
-	pContext->Draw(3, 0);
+	pContext->Draw(vertices.size(), 0);
 }

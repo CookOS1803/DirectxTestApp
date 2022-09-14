@@ -39,7 +39,7 @@ Window::WindowClass::~WindowClass()
 }
 
 Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
-	: width(newWidth), height(newHeight)
+	: width(newWidth), height(newHeight), x(0.f), y(0.f)
 {
 	RECT wr{};
 	wr.left = 100;
@@ -56,6 +56,8 @@ Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
 	ShowWindow(currHwnd, SW_SHOWDEFAULT);
 
 	pGfx = std::make_unique<Graphics>(currHwnd, width, height);
+
+	DrawDiamond();
 }
 
 Window::~Window()
@@ -102,17 +104,26 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		PostQuitMessage(69);
 		break;
 	case WM_KEYDOWN:
-		if (wParam == 'F')
+		
+		switch (wParam)
 		{
-			SetWindowText(hwnd, L"ASdas");
+		case 'a': case 'A':
+			x -= 0.01f;
+			break;
+		case 'd': case 'D':
+			x += 0.01f;
+			break;
+		case 's': case 'S':
+			y -= 0.01f;
+			break;
+		case 'w': case 'W':
+			y += 0.01f;
+			break;
+		default:
+			break;
 		}
 
-		break;
-	case WM_KEYUP:
-		if (wParam == 'F')
-		{
-			SetWindowText(hwnd, L"nu window");
-		}
+		DrawDiamond();
 
 		break;
 	case WM_CHAR:
@@ -137,4 +148,15 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+void Window::DrawDiamond()
+{
+	pGfx->CreateVertexBuffer({
+			{x + 0.f,  y + 0.f, 0.5f},
+			{x + 0.05f, y + 0.1f, 0.5f},
+			{x + 0.1f,  y + 0.f, 0.5f},
+			{x + 0.05f, y - 0.1f, 0.5f},
+			{x + 0.f,  y + 0.f, 0.5f}
+		});
 }
