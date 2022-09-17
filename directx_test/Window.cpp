@@ -153,10 +153,13 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 void Window::DrawDiamond()
 {
 	pGfx->CreateVertexBuffer({
-			{x + 0.f,  y + 0.f, 0.5f},
-			{x + 0.05f, y + 0.1f, 0.5f},
-			{x + 0.1f,  y + 0.f, 0.5f},
-			{x + 0.05f, y - 0.1f, 0.5f},
-			{x + 0.f,  y + 0.f, 0.5f}
-		});
+		{ XMFLOAT3(x - 1.0f, y + 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(x + 1.0f, y + 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(x + 1.0f, y + 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(x - 1.0f, y + 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(x - 1.0f, y - 1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(x + 1.0f, y - 1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(x + 1.0f, y - 1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(x - 1.0f, y - 1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
+	});
 }

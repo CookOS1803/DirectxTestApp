@@ -5,30 +5,44 @@
 
 Graphics::Graphics(HWND hWnd, int width, int height)
 {
-	CreateDeviceAndSwapChain(hWnd);
+	CreateDeviceAndSwapChain(hWnd, width, height);
 	CreateRenderTargetView();
 	InitializeViewport(width, height);
 	auto blob = CompileAndCreateVertexShader();
 	DefineAndCreateInputLayout(blob);
 	CompileAndCreatePixelShader();
-	//CreateVertexBuffer({
-	//	{0.f, 0.f, 0.5f},
-	//	{0.5f, 1.f, 0.5f},
-	//	{1.f, 0.f, 0.5f},
-	//	{0.5f, -1.f, 0.5f}
-	//});
+	CreateIndexBuffer({
+		3,1,0,
+		2,1,3,
 
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+		0,5,4,
+		1,5,0,
+
+		3,4,7,
+		0,4,3,
+
+		1,6,5,
+		2,6,1,
+
+		2,7,6,
+		3,7,2,
+
+		6,4,5,
+		7,4,6,
+		});
+	CreateConstantBuffer();
+
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd)
+void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height)
 {
 	DXGI_SWAP_CHAIN_DESC sd ={};
-	sd.BufferDesc.Width = 0;
-	sd.BufferDesc.Height = 0;
+	sd.BufferDesc.Width = width;
+	sd.BufferDesc.Height = height;
 	sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	sd.BufferDesc.RefreshRate.Numerator = 0;
-	sd.BufferDesc.RefreshRate.Denominator = 0;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.SampleDesc.Count = 1;
@@ -113,14 +127,14 @@ ID3DBlob* Graphics::CompileAndCreateVertexShader()
 
 void Graphics::DefineAndCreateInputLayout(ID3DBlob* pVSBlob)
 {
-	D3D11_INPUT_ELEMENT_DESC layout[] =
+	std::array layout =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		D3D11_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		D3D11_INPUT_ELEMENT_DESC{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	UINT numElements = ARRAYSIZE(layout);
 
 	ID3D11InputLayout* pVertexLayout = nullptr;
-	HRESULT hr = pDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &pVertexLayout);
+	HRESULT hr = pDevice->CreateInputLayout(layout.data(), layout.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &pVertexLayout);
 	pVSBlob->Release();
 	if (FAILED(hr))
 		exit(-2);
@@ -171,12 +185,60 @@ void Graphics::CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertice
 	pContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
 }
 
+void Graphics::CreateIndexBuffer(std::initializer_list<WORD> newIndices)
+{
+	indices = newIndices;
+
+	D3D11_BUFFER_DESC bd{};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(WORD) * indices.size();
+	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA InitData{};
+	ID3D11Buffer* pIndexBuffer = nullptr;
+	InitData.pSysMem = indices.data();
+	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
+	if (FAILED(hr))
+		exit(-3);
+
+	// Set index buffer
+	pContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+}
+
+void Graphics::CreateConstantBuffer()
+{
+	D3D11_BUFFER_DESC bd{};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(ConstantBuffer);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	HRESULT hr = pDevice->CreateBuffer(&bd, NULL, &pConstantBuffer);
+	if (FAILED(hr))
+		exit(-3);
+}
+
+void Graphics::InitializeMatrices(int width, int height)
+{
+	world = XMMatrixIdentity();
+
+	// Initialize the view matrix
+	XMVECTOR Eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
+	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	view = XMMatrixLookAtLH(Eye, At, Up);
+
+	// Initialize the projection matrix
+	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
+}
+
 Graphics::~Graphics()
 {
 	if (pDevice) pDevice->Release();
 	if (pSwap) pSwap->Release();
 	if (pContext) pContext->Release();
 	if (pTarget) pTarget->Release();
+	if (pConstantBuffer) pConstantBuffer->Release();
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -225,7 +287,40 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 
 void Graphics::Render()
 {
+	// Update our time
+	static float t = 0.0f;
+	//if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+	//{
+		t += (float)XM_PI * 0.0125f;
+	//}
+	//else
+	//{
+	//	static DWORD dwTimeStart = 0;
+	//	DWORD dwTimeCur = GetTickCount64();
+	//	if (dwTimeStart == 0)
+	//		dwTimeStart = dwTimeCur;
+	//	t = (dwTimeCur - dwTimeStart) / 1000.0f;
+	//}
+
+	//
+	// Animate the cube
+	//
+	world = XMMatrixRotationY(t);
+
+	//
+	// Update variables
+	//
+	ConstantBuffer cb;
+	cb.world = XMMatrixTranspose(world);
+	cb.view = XMMatrixTranspose(view);
+	cb.projection = XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
+
+	//
+	// Renders a triangle
+	//
 	pContext->VSSetShader(pVertexShader, NULL, 0);
+	pContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
-	pContext->Draw(vertices.size(), 0);
+	pContext->DrawIndexed(indices.size(), 0, 0);
 }
