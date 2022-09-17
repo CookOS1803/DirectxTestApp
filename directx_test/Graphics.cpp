@@ -2,11 +2,15 @@
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <array>
+#include <cmath>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
 {
 	CreateDeviceAndSwapChain(hWnd, width, height);
 	CreateRenderTargetView();
+	auto format = CreateDepthStencilTexture(width, height);
+	CreateDepthStencilView(format);
+	pContext->OMSetRenderTargets(1, &pTarget, pDepthStencilView);
 	InitializeViewport(width, height);
 	auto blob = CompileAndCreateVertexShader();
 	DefineAndCreateInputLayout(blob);
@@ -29,15 +33,17 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 
 		6,4,5,
 		7,4,6,
+
 		});
 	CreateConstantBuffer();
+	InitializeMatrices(width, height);
 
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height)
 {
-	DXGI_SWAP_CHAIN_DESC sd ={};
+	DXGI_SWAP_CHAIN_DESC sd {};
 	sd.BufferDesc.Width = width;
 	sd.BufferDesc.Height = height;
 	sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -85,9 +91,41 @@ void Graphics::CreateRenderTargetView()
 		);
 
 		pBackBuffer->Release();
-
-		pContext->OMSetRenderTargets(1, &pTarget, nullptr);
 	}
+}
+
+DXGI_FORMAT Graphics::CreateDepthStencilTexture(int width, int height)
+{
+	D3D11_TEXTURE2D_DESC descDepth{};
+	descDepth.Width = width;
+	descDepth.Height = height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+
+	HRESULT hr = pDevice->CreateTexture2D(&descDepth, NULL, &pDepthStencil);
+	if (FAILED(hr))
+		exit(-3);
+
+	return descDepth.Format;
+}
+
+void Graphics::CreateDepthStencilView(DXGI_FORMAT format)
+{
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV{};
+	descDSV.Format = format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+
+	HRESULT hr = pDevice->CreateDepthStencilView(pDepthStencil, &descDSV, &pDepthStencilView);
+	if (FAILED(hr))
+		exit(-3);
 }
 
 void Graphics::InitializeViewport(int width, int height)
@@ -130,9 +168,9 @@ void Graphics::DefineAndCreateInputLayout(ID3DBlob* pVSBlob)
 	std::array layout =
 	{
 		D3D11_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		D3D11_INPUT_ELEMENT_DESC{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		D3D11_INPUT_ELEMENT_DESC{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, sizeof(SimpleVertex::position), D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
-
+	
 	ID3D11InputLayout* pVertexLayout = nullptr;
 	HRESULT hr = pDevice->CreateInputLayout(layout.data(), layout.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &pVertexLayout);
 	pVSBlob->Release();
@@ -165,6 +203,8 @@ void Graphics::CompileAndCreatePixelShader()
 void Graphics::CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertices)
 {
 	vertices = newVertices;
+	
+	if (pVertexBuffer) pVertexBuffer->Release();
 
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -174,7 +214,6 @@ void Graphics::CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertice
 	bd.MiscFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA InitData{};
-	ID3D11Buffer* pVertexBuffer = nullptr;
 	InitData.pSysMem = vertices.data();
 	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pVertexBuffer);
 	if (FAILED(hr))
@@ -189,6 +228,8 @@ void Graphics::CreateIndexBuffer(std::initializer_list<WORD> newIndices)
 {
 	indices = newIndices;
 
+	if (pIndexBuffer) pIndexBuffer->Release();
+
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(WORD) * indices.size();
@@ -196,7 +237,6 @@ void Graphics::CreateIndexBuffer(std::initializer_list<WORD> newIndices)
 	bd.CPUAccessFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA InitData{};
-	ID3D11Buffer* pIndexBuffer = nullptr;
 	InitData.pSysMem = indices.data();
 	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
 	if (FAILED(hr))
@@ -220,13 +260,14 @@ void Graphics::CreateConstantBuffer()
 
 void Graphics::InitializeMatrices(int width, int height)
 {
-	world = XMMatrixIdentity();
+	world1 = XMMatrixIdentity();
+	world2 = XMMatrixIdentity();
 
 	// Initialize the view matrix
-	XMVECTOR Eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	SetCameraPosition(0, 0, -5);
+	SetCameraRotation(0, 0, 0);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	view = XMMatrixLookAtLH(Eye, At, Up);
+	view = XMMatrixLookAtLH(cameraPosition, cameraLookAt, Up);
 
 	// Initialize the projection matrix
 	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
@@ -238,7 +279,11 @@ Graphics::~Graphics()
 	if (pSwap) pSwap->Release();
 	if (pContext) pContext->Release();
 	if (pTarget) pTarget->Release();
+	if (pVertexBuffer) pVertexBuffer->Release();
+	if (pIndexBuffer) pIndexBuffer->Release();
 	if (pConstantBuffer) pConstantBuffer->Release();
+	if (pDepthStencil) pDepthStencil->Release();
+	if (pDepthStencilView) pDepthStencilView->Release();
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -274,6 +319,18 @@ void Graphics::SetFullscreenState(bool state)
 	pSwap->SetFullscreenState(state, nullptr);
 }
 
+void Graphics::SetCameraPosition(float newX, float newY, float newZ)
+{
+	auto newPos = XMVectorSet(newX, newY, newZ, 0.f);
+	cameraLookAt -= (cameraPosition - newPos);
+	cameraPosition = newPos;
+}
+
+void Graphics::SetCameraRotation(float aroundX, float aroundY, float aroundZ)
+{
+	cameraLookAt = cameraPosition + XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), XMMatrixRotationRollPitchYaw(aroundX, aroundY, aroundZ));
+}
+
 void Graphics::EndFrame()
 {
 	pSwap->Present(1u, 0u);
@@ -287,11 +344,12 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 
 void Graphics::Render()
 {
+	
 	// Update our time
 	static float t = 0.0f;
 	//if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
 	//{
-		t += (float)XM_PI * 0.0125f;
+	t += (float)XM_PI * 0.0125f;
 	//}
 	//else
 	//{
@@ -302,25 +360,36 @@ void Graphics::Render()
 	//	t = (dwTimeCur - dwTimeStart) / 1000.0f;
 	//}
 
-	//
-	// Animate the cube
-	//
-	world = XMMatrixRotationY(t);
+		
+	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	view = XMMatrixLookAtLH(cameraPosition, cameraLookAt, Up);
 
-	//
-	// Update variables
-	//
-	ConstantBuffer cb;
-	cb.world = XMMatrixTranspose(world);
-	cb.view = XMMatrixTranspose(view);
-	cb.projection = XMMatrixTranspose(projection);
-	pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
+	auto spin = XMMatrixRotationZ(-t);
+	auto orbit = XMMatrixRotationY(-t);
+	auto translation = XMMatrixTranslation(0.0f, 0.0f, 10.0f);
+	auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 
-	//
-	// Renders a triangle
-	//
+	world2 = scale * spin * translation * orbit;
+
+	ClearBuffer(0, 0, 1);
+	pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	ConstantBuffer cb1;
+	cb1.world = XMMatrixTranspose(world1);
+	cb1.view = XMMatrixTranspose(view);
+	cb1.projection = XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb1, 0, 0);
+
 	pContext->VSSetShader(pVertexShader, NULL, 0);
 	pContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
+	pContext->DrawIndexed(indices.size(), 0, 0);
+
+	ConstantBuffer cb2;
+	cb2.world = XMMatrixTranspose(world2);
+	cb2.view = XMMatrixTranspose(view);
+	cb2.projection = XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb2, 0, 0);
+
 	pContext->DrawIndexed(indices.size(), 0, 0);
 }

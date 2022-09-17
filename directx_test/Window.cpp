@@ -39,7 +39,7 @@ Window::WindowClass::~WindowClass()
 }
 
 Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
-	: width(newWidth), height(newHeight), x(0.f), y(0.f)
+	: width(newWidth), height(newHeight), x(0.f), y(0.f), z(-5.f), ax(0.f), ay(0.f), az(0.f)
 {
 	RECT wr{};
 	wr.left = 100;
@@ -104,28 +104,48 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		PostQuitMessage(69);
 		break;
 	case WM_KEYDOWN:
-		
+	{
+		const float step = 0.1f;
+		const float astep = 0.1f;
+
 		switch (wParam)
 		{
 		case 'a': case 'A':
-			x -= 0.01f;
+			x -= step;
 			break;
 		case 'd': case 'D':
-			x += 0.01f;
+			x += step;
 			break;
 		case 's': case 'S':
-			y -= 0.01f;
+			z -= step;
 			break;
 		case 'w': case 'W':
-			y += 0.01f;
+			z += step;
+			break;
+		case VK_DOWN:
+			ax += astep;
+			break;
+		case VK_UP:
+			ax -= astep;
+			break;
+		case VK_LEFT:
+			ay -= astep;
+			break;
+		case VK_RIGHT:
+			ay += astep;
 			break;
 		default:
 			break;
 		}
 
-		DrawDiamond();
+		ax = std::min(std::max(-XM_PIDIV4, ax), XM_PIDIV4);
+		az = std::min(std::max(-XM_PIDIV4, az), XM_PIDIV4);
+
+		pGfx->SetCameraPosition(x, y, z);
+		pGfx->SetCameraRotation(ax, ay, az);
 
 		break;
+	}
 	case WM_CHAR:
 	{
 		static std::wstring title;
@@ -153,13 +173,13 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 void Window::DrawDiamond()
 {
 	pGfx->CreateVertexBuffer({
-		{ XMFLOAT3(x - 1.0f, y + 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(x + 1.0f, y + 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(x + 1.0f, y + 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(x - 1.0f, y + 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(x - 1.0f, y - 1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(x + 1.0f, y - 1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(x + 1.0f, y - 1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ XMFLOAT3(x - 1.0f, y - 1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
+		{ {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+		{ {1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+		{ {1.0f, 1.0f, 1.0f},  {0.0f, 1.0f, 1.0f, 1.0f} },
+		{ {-1.0f, 1.0f, 1.0f},  {1.0f, 0.0f, 0.0f, 1.0f} },
+		{ {-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
+		{ {1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
+		{ {1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f, 1.0f} },
+		{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} },
 	});
 }

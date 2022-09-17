@@ -43,5 +43,6 @@ private:
 	HWND currHwnd;
 	std::unique_ptr<Graphics> pGfx;
 
-	float x, y;
+	float x, y, z;
+	float ax, ay, az;
 };

@@ -23,12 +23,12 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		}
 		else
 		{
-			sine += 0.1f;
-			const float r = sin(sine) / 2.f + 0.5f;
-			const float g = sin(sqrt(sine)) / 2.f + 0.5f;
-			const float b = sin(log2(sine)) / 2.f + 0.5f;
-
-			wnd.Gfx().ClearBuffer(r, g, b);
+			//sine += 0.1f;
+			//const float r = sin(sine) / 2.f + 0.5f;
+			//const float g = sin(sqrt(sine)) / 2.f + 0.5f;
+			//const float b = sin(log2(sine)) / 2.f + 0.5f;
+			//
+			//wnd.Gfx().ClearBuffer(r, g, b);
 
 			wnd.Gfx().Render();
 
