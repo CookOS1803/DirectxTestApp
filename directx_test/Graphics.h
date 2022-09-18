@@ -33,6 +33,7 @@ public:
 	void SetFullscreenState(bool state);
 	void SetCameraPosition(float newX, float newY, float newZ);
 	void SetCameraRotation(float aroundX, float aroundY, float aroundZ);
+	void Translate(float x, float y, float z);
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void Render();

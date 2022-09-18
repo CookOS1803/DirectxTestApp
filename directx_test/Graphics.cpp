@@ -331,6 +331,13 @@ void Graphics::SetCameraRotation(float aroundX, float aroundY, float aroundZ)
 	cameraLookAt = cameraPosition + XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), XMMatrixRotationRollPitchYaw(aroundX, aroundY, aroundZ));
 }
 
+void Graphics::Translate(float x, float y, float z)
+{
+	auto translation = XMVectorSet(x, y, z, 0.f);
+
+	cameraPosition += cameraLookAt * translation;
+}
+
 void Graphics::EndFrame()
 {
 	pSwap->Present(1u, 0u);

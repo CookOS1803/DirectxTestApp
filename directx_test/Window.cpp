@@ -111,16 +111,20 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		switch (wParam)
 		{
 		case 'a': case 'A':
-			x -= step;
+			//x -= step;
+			pGfx->Translate(-step, 0, 0);
 			break;
 		case 'd': case 'D':
-			x += step;
+			//x += step;
+			pGfx->Translate(step, 0, 0);
 			break;
 		case 's': case 'S':
-			z -= step;
+			//z -= step;
+			pGfx->Translate(0, 0, -step);
 			break;
 		case 'w': case 'W':
-			z += step;
+			//z += step;
+			pGfx->Translate(0, 0, step);
 			break;
 		case VK_DOWN:
 			ax += astep;
