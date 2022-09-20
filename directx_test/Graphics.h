@@ -4,6 +4,7 @@
 #include <xnamath.h>
 #include <initializer_list>
 #include <vector>
+#include "Camera.h"
 
 struct SimpleVertex
 {
@@ -31,14 +32,13 @@ public:
 	~Graphics();
 
 	void SetFullscreenState(bool state);
-	void SetCameraPosition(float newX, float newY, float newZ);
-	void SetCameraRotation(float aroundX, float aroundY, float aroundZ);
-	void Translate(float x, float y, float z);
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void Render();
 	void CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertices);
 	void CreateIndexBuffer(std::initializer_list<WORD> newIndices);
+	
+	constexpr Camera& GetCamera() noexcept {return camera;}
 
 	static HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 
@@ -74,7 +74,6 @@ private:
 	XMMATRIX view;
 	XMMATRIX projection;
 
-	XMVECTOR cameraPosition;
-	XMVECTOR cameraLookAt;
+	Camera camera;
 };
 

@@ -5,6 +5,7 @@
 #include <cmath>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
+	: camera()
 {
 	CreateDeviceAndSwapChain(hWnd, width, height);
 	CreateRenderTargetView();
@@ -263,11 +264,8 @@ void Graphics::InitializeMatrices(int width, int height)
 	world1 = XMMatrixIdentity();
 	world2 = XMMatrixIdentity();
 
-	// Initialize the view matrix
-	SetCameraPosition(0, 0, -5);
-	SetCameraRotation(0, 0, 0);
-	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	view = XMMatrixLookAtLH(cameraPosition, cameraLookAt, Up);
+	camera.SetRotation(0, 0, 0);
+	camera.SetPosition(0, 0, -5);
 
 	// Initialize the projection matrix
 	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
@@ -319,25 +317,6 @@ void Graphics::SetFullscreenState(bool state)
 	pSwap->SetFullscreenState(state, nullptr);
 }
 
-void Graphics::SetCameraPosition(float newX, float newY, float newZ)
-{
-	auto newPos = XMVectorSet(newX, newY, newZ, 0.f);
-	cameraLookAt -= (cameraPosition - newPos);
-	cameraPosition = newPos;
-}
-
-void Graphics::SetCameraRotation(float aroundX, float aroundY, float aroundZ)
-{
-	cameraLookAt = cameraPosition + XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), XMMatrixRotationRollPitchYaw(aroundX, aroundY, aroundZ));
-}
-
-void Graphics::Translate(float x, float y, float z)
-{
-	auto translation = XMVectorSet(x, y, z, 0.f);
-
-	cameraPosition += cameraLookAt * translation;
-}
-
 void Graphics::EndFrame()
 {
 	pSwap->Present(1u, 0u);
@@ -368,8 +347,6 @@ void Graphics::Render()
 	//}
 
 		
-	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	view = XMMatrixLookAtLH(cameraPosition, cameraLookAt, Up);
 
 	auto spin = XMMatrixRotationZ(-t);
 	auto orbit = XMMatrixRotationY(-t);
@@ -377,6 +354,8 @@ void Graphics::Render()
 	auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 
 	world2 = scale * spin * translation * orbit;
+
+	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
 	ClearBuffer(0, 0, 1);
 	pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);

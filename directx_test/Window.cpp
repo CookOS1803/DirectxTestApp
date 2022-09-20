@@ -111,20 +111,16 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		switch (wParam)
 		{
 		case 'a': case 'A':
-			//x -= step;
-			pGfx->Translate(-step, 0, 0);
+			pGfx->GetCamera().Translate(-step, 0, 0);
 			break;
 		case 'd': case 'D':
-			//x += step;
-			pGfx->Translate(step, 0, 0);
+			pGfx->GetCamera().Translate(step, 0, 0);
 			break;
 		case 's': case 'S':
-			//z -= step;
-			pGfx->Translate(0, 0, -step);
+			pGfx->GetCamera().Translate(0, 0, -step);
 			break;
 		case 'w': case 'W':
-			//z += step;
-			pGfx->Translate(0, 0, step);
+			pGfx->GetCamera().Translate(0, 0, step);
 			break;
 		case VK_DOWN:
 			ax += astep;
@@ -142,11 +138,10 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 		}
 
-		ax = std::min(std::max(-XM_PIDIV4, ax), XM_PIDIV4);
-		az = std::min(std::max(-XM_PIDIV4, az), XM_PIDIV4);
+		ax = std::min(std::max(-XM_PIDIV2, ax), XM_PIDIV2);
+		az = std::min(std::max(-XM_PIDIV2, az), XM_PIDIV2);
 
-		pGfx->SetCameraPosition(x, y, z);
-		pGfx->SetCameraRotation(ax, ay, az);
+		pGfx->GetCamera().SetRotation(ax, ay, az);
 
 		break;
 	}
@@ -177,13 +172,13 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 void Window::DrawDiamond()
 {
 	pGfx->CreateVertexBuffer({
-		{ {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
-		{ {1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
-		{ {1.0f, 1.0f, 1.0f},  {0.0f, 1.0f, 1.0f, 1.0f} },
-		{ {-1.0f, 1.0f, 1.0f},  {1.0f, 0.0f, 0.0f, 1.0f} },
+		{ {-1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 1.0f, 1.0f} },
+		{ {1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f, 1.0f} },
+		{ {1.0f, 1.0f, 1.0f},    {0.0f, 1.0f, 1.0f, 1.0f} },
+		{ {-1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f, 1.0f} },
 		{ {-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-		{ {1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} },
-		{ {1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f, 1.0f} },
+		{ {1.0f, -1.0f, -1.0f},  {1.0f, 1.0f, 0.0f, 1.0f} },
+		{ {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f} },
 		{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} },
 	});
 }
