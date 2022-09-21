@@ -16,26 +16,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	auto blob = CompileAndCreateVertexShader();
 	DefineAndCreateInputLayout(blob);
 	CompileAndCreatePixelShader();
-	CreateIndexBuffer({
-		3,1,0,
-		2,1,3,
-
-		0,5,4,
-		1,5,0,
-
-		3,4,7,
-		0,4,3,
-
-		1,6,5,
-		2,6,1,
-
-		2,7,6,
-		3,7,2,
-
-		6,4,5,
-		7,4,6,
-
-		});
 	CreateConstantBuffer();
 	InitializeMatrices(width, height);
 
@@ -261,8 +241,9 @@ void Graphics::CreateConstantBuffer()
 
 void Graphics::InitializeMatrices(int width, int height)
 {
-	world1 = XMMatrixIdentity();
-	world2 = XMMatrixIdentity();
+	worlds.push_back(XMMatrixIdentity());
+	worlds.push_back(XMMatrixIdentity());
+	worlds.push_back(XMMatrixIdentity());
 
 	camera.SetRotation(0, 0, 0);
 	camera.SetPosition(0, 0, -5);
@@ -330,52 +311,39 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 
 void Graphics::Render()
 {
-	
-	// Update our time
+
 	static float t = 0.0f;
-	//if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
-	//{
 	t += (float)XM_PI * 0.0125f;
-	//}
-	//else
-	//{
-	//	static DWORD dwTimeStart = 0;
-	//	DWORD dwTimeCur = GetTickCount64();
-	//	if (dwTimeStart == 0)
-	//		dwTimeStart = dwTimeCur;
-	//	t = (dwTimeCur - dwTimeStart) / 1000.0f;
-	//}
 
-		
+	const auto spin0 = XMMatrixRotationZ(std::sin(t));
+	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV2), 0.f);
+	worlds[0] = spin0 * translation0;
 
-	auto spin = XMMatrixRotationZ(-t);
-	auto orbit = XMMatrixRotationY(-t);
-	auto translation = XMMatrixTranslation(0.0f, 0.0f, 10.0f);
-	auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	const auto spin = XMMatrixRotationZ(-t);
+	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 0.0f, 5.f * std::sin(t));
+	const auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	worlds[1] = scale * spin * translation1;
 
-	world2 = scale * spin * translation * orbit;
+	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, 0.0f, -5.f * std::sin(t));
+	worlds[2] = scale * spin * translation2;
 
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
 	ClearBuffer(0, 0, 1);
 	pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	ConstantBuffer cb1;
-	cb1.world = XMMatrixTranspose(world1);
-	cb1.view = XMMatrixTranspose(view);
-	cb1.projection = XMMatrixTranspose(projection);
-	pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb1, 0, 0);
-
 	pContext->VSSetShader(pVertexShader, NULL, 0);
 	pContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
-	pContext->DrawIndexed(indices.size(), 0, 0);
 
-	ConstantBuffer cb2;
-	cb2.world = XMMatrixTranspose(world2);
-	cb2.view = XMMatrixTranspose(view);
-	cb2.projection = XMMatrixTranspose(projection);
-	pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb2, 0, 0);
+	for (const auto& w : worlds)
+	{
+		ConstantBuffer cb;
+		cb.world = XMMatrixTranspose(w);
+		cb.view = XMMatrixTranspose(view);
+		cb.projection = XMMatrixTranspose(projection);
+		pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
 
-	pContext->DrawIndexed(indices.size(), 0, 0);
+		pContext->DrawIndexed(indices.size(), 0, 0);
+	}
 }

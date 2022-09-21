@@ -69,8 +69,7 @@ private:
 	std::vector<SimpleVertex> vertices;
 	std::vector<WORD> indices;
 
-	XMMATRIX world1;
-	XMMATRIX world2;
+	std::vector<XMMATRIX> worlds;
 	XMMATRIX view;
 	XMMATRIX projection;
 

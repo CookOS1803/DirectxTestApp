@@ -22,7 +22,7 @@ void Camera::SetRotation(float aroundX, float aroundY, float aroundZ)
 void Camera::Translate(float x, float y, float z)
 {
 	XMFLOAT3 forward{}, up{}, left{};
-
+	
 	XMStoreFloat3(&forward, forwardVector);
 	XMStoreFloat3(&up, upVector);
 	XMStoreFloat3(&left, XMVector3Cross(upVector, forwardVector));
