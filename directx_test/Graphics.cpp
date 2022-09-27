@@ -181,10 +181,8 @@ void Graphics::CompileAndCreatePixelShader()
 		exit(-2);
 }
 
-void Graphics::CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertices)
-{
-	vertices = newVertices;
-	
+void Graphics::CreateVertexBuffer(const std::vector<SimpleVertex>& vertices)
+{	
 	if (pVertexBuffer) pVertexBuffer->Release();
 
 	D3D11_BUFFER_DESC bd{};
@@ -205,10 +203,8 @@ void Graphics::CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertice
 	pContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
 }
 
-void Graphics::CreateIndexBuffer(std::initializer_list<WORD> newIndices)
+void Graphics::CreateIndexBuffer(const std::vector<WORD>& indices)
 {
-	indices = newIndices;
-
 	if (pIndexBuffer) pIndexBuffer->Release();
 
 	D3D11_BUFFER_DESC bd{};
@@ -225,6 +221,11 @@ void Graphics::CreateIndexBuffer(std::initializer_list<WORD> newIndices)
 
 	// Set index buffer
 	pContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+}
+
+void Graphics::AddObject(const SceneObject& obj)
+{
+	objects.push_back(obj);
 }
 
 void Graphics::CreateConstantBuffer()
@@ -311,7 +312,6 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 
 void Graphics::Render()
 {
-
 	static float t = 0.0f;
 	t += (float)XM_PI * 0.0125f;
 
@@ -336,14 +336,17 @@ void Graphics::Render()
 	pContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
 
-	for (const auto& w : worlds)
+	for (size_t i = 0; i < objects.size(); i++)
 	{
+		CreateVertexBuffer(objects[i].GetMesh()->Vertices());
+		CreateIndexBuffer(objects[i].GetMesh()->Indices());
+
 		ConstantBuffer cb;
-		cb.world = XMMatrixTranspose(w);
+		cb.world = XMMatrixTranspose(worlds[i]);
 		cb.view = XMMatrixTranspose(view);
 		cb.projection = XMMatrixTranspose(projection);
 		pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
 
-		pContext->DrawIndexed(indices.size(), 0, 0);
+		pContext->DrawIndexed(objects[i].GetMesh()->Indices().size(), 0, 0);
 	}
 }

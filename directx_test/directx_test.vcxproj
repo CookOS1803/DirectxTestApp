@@ -158,13 +158,18 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="directx_test.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WindowsMessageMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="NormWin.h" />
+    <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="SimpleVertex.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WindowsMessageMap.h" />
   </ItemGroup>

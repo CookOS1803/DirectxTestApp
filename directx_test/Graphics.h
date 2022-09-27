@@ -5,16 +5,8 @@
 #include <initializer_list>
 #include <vector>
 #include "Camera.h"
-
-struct SimpleVertex
-{
-	SimpleVertex(XMFLOAT3 position, XMFLOAT4 color) : position(position), color(color)
-	{
-	}
-
-	XMFLOAT3 position;
-	XMFLOAT4 color;
-};
+#include "SimpleVertex.h"
+#include "SceneObject.h"
 
 struct ConstantBuffer
 {
@@ -35,8 +27,9 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void Render();
-	void CreateVertexBuffer(std::initializer_list<SimpleVertex> newVertices);
-	void CreateIndexBuffer(std::initializer_list<WORD> newIndices);
+	void CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
+	void CreateIndexBuffer(const std::vector<WORD>& newIndices);
+	void AddObject(const SceneObject& obj);
 	
 	constexpr Camera& GetCamera() noexcept {return camera;}
 
@@ -66,13 +59,12 @@ private:
 	ID3D11VertexShader* pVertexShader = nullptr;
 	ID3D11PixelShader* pPixelShader = nullptr;
 
-	std::vector<SimpleVertex> vertices;
-	std::vector<WORD> indices;
-
-	std::vector<XMMATRIX> worlds;
 	XMMATRIX view;
 	XMMATRIX projection;
 
 	Camera camera;
+
+	std::vector<SceneObject> objects;
+	std::vector<XMMATRIX> worlds;
 };
 
