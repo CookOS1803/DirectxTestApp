@@ -155,23 +155,43 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		0, 16, 7
 		});
 
-	//Mesh mesh2;
-	//mesh2.SetVertices({
-	//	{{-std::sqrt(2.f) / 2, 0.f, -std::sqrt(2.f) / 2}, {}},
-	//	{{-std::sqrt(2.f) / 2, 0.f, std::sqrt(2.f) / 2}, {}},
-	//	{{std::sqrt(2.f) / 2, 0.f, std::sqrt(2.f) / 2}, {}},
-	//	{{std::sqrt(2.f) / 2, 0.f, -std::sqrt(2.f) / 2}, {}}
-	//	});
-	//mesh2.SetIndices({
-	//	0, 1, 2,
-	//	0, 2, 3
-	//	});
-	//
-	//SceneObject o2;
-	//o2.SetMesh(mesh2);
-	//wnd.Gfx().AddObject(o2);
+	Mesh mesh2;
+	mesh2.SetVertices({
+		{ {-1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 1.0f, 1.0f} },
+		{ {1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f, 1.0f} },
+		{ {1.0f, 1.0f, 1.0f},    {0.0f, 1.0f, 1.0f, 1.0f} },
+		{ {-1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f, 1.0f} },
+		{ {-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
+		{ {1.0f, -1.0f, -1.0f},  {1.0f, 1.0f, 0.0f, 1.0f} },
+		{ {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f} },
+		{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} }
+		});
+	mesh2.SetIndices({
+		3,1,0,
+		2,1,3,
 
-	for (size_t i = 0; i < 3; i++)
+		0,5,4,
+		1,5,0,
+
+		3,4,7,
+		0,4,3,
+
+		1,6,5,
+		2,6,1,
+
+		2,7,6,
+		3,7,2,
+
+		6,4,5,
+		7,4,6,
+
+		});
+	
+	SceneObject o2;
+	o2.SetMesh(mesh2);
+	wnd.Gfx().AddObject(o2);
+
+	for (size_t i = 0; i < 2; i++)
 	{
 		SceneObject o;
 		o.SetMesh(mesh);

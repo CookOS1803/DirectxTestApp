@@ -315,16 +315,16 @@ void Graphics::Render()
 	static float t = 0.0f;
 	t += (float)XM_PI * 0.0125f;
 
-	const auto spin0 = XMMatrixRotationZ(std::sin(t));
-	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV2), 0.f);
+	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
+	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
 	worlds[0] = spin0 * translation0;
 
 	const auto spin = XMMatrixRotationZ(-t);
-	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 0.0f, 5.f * std::sin(t));
+	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 5.f * std::abs(std::sin(t)), 5.f * std::sin(t));
 	const auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 	worlds[1] = scale * spin * translation1;
 
-	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, 0.0f, -5.f * std::sin(t));
+	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
 	worlds[2] = scale * spin * translation2;
 
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
