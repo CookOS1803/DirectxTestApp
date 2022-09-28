@@ -30,7 +30,7 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 
-	Graphics& Gfx();
+	Graphics* Gfx() { return pGfx.get(); }
 
 private:
 

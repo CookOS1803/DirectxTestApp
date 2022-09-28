@@ -5,7 +5,7 @@
 #include <cmath>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
-	: camera()
+	: camera(), objects()
 {
 	CreateDeviceAndSwapChain(hWnd, width, height);
 	CreateRenderTargetView();
@@ -181,10 +181,8 @@ void Graphics::CompileAndCreatePixelShader()
 		exit(-2);
 }
 
-void Graphics::CreateVertexBuffer(const std::vector<SimpleVertex>& vertices)
+ID3D11Buffer* Graphics::CreateVertexBuffer(const std::vector<SimpleVertex>& vertices)
 {	
-	if (pVertexBuffer) pVertexBuffer->Release();
-
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(SimpleVertex) * vertices.size();
@@ -194,19 +192,16 @@ void Graphics::CreateVertexBuffer(const std::vector<SimpleVertex>& vertices)
 
 	D3D11_SUBRESOURCE_DATA InitData{};
 	InitData.pSysMem = vertices.data();
+	ID3D11Buffer* pVertexBuffer = nullptr;
 	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pVertexBuffer);
 	if (FAILED(hr))
 		exit(-3);
 
-	UINT stride = sizeof(SimpleVertex);
-	UINT offset = 0;
-	pContext->IASetVertexBuffers(0, 1, &pVertexBuffer, &stride, &offset);
+	return pVertexBuffer;
 }
 
-void Graphics::CreateIndexBuffer(const std::vector<WORD>& indices)
+ID3D11Buffer* Graphics::CreateIndexBuffer(const std::vector<WORD>& indices)
 {
-	if (pIndexBuffer) pIndexBuffer->Release();
-
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(WORD) * indices.size();
@@ -215,17 +210,23 @@ void Graphics::CreateIndexBuffer(const std::vector<WORD>& indices)
 
 	D3D11_SUBRESOURCE_DATA InitData{};
 	InitData.pSysMem = indices.data();
+	ID3D11Buffer* pIndexBuffer = nullptr;
 	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
 	if (FAILED(hr))
 		exit(-3);
 
-	// Set index buffer
-	pContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	return pIndexBuffer;
+
 }
 
-void Graphics::AddObject(const SceneObject& obj)
+void Graphics::AddObject(SceneObject* obj)
 {
-	objects.push_back(obj);
+	objects.emplace_back(
+		obj,
+		XMMatrixIdentity(),
+		CreateVertexBuffer(obj->GetMesh().Vertices()),
+		CreateIndexBuffer(obj->GetMesh().Indices())
+	);
 }
 
 void Graphics::CreateConstantBuffer()
@@ -242,10 +243,6 @@ void Graphics::CreateConstantBuffer()
 
 void Graphics::InitializeMatrices(int width, int height)
 {
-	worlds.push_back(XMMatrixIdentity());
-	worlds.push_back(XMMatrixIdentity());
-	worlds.push_back(XMMatrixIdentity());
-
 	camera.SetRotation(0, 0, 0);
 	camera.SetPosition(0, 0, -5);
 
@@ -259,11 +256,15 @@ Graphics::~Graphics()
 	if (pSwap) pSwap->Release();
 	if (pContext) pContext->Release();
 	if (pTarget) pTarget->Release();
-	if (pVertexBuffer) pVertexBuffer->Release();
-	if (pIndexBuffer) pIndexBuffer->Release();
 	if (pConstantBuffer) pConstantBuffer->Release();
 	if (pDepthStencil) pDepthStencil->Release();
 	if (pDepthStencilView) pDepthStencilView->Release();
+
+	for (auto& o : objects)
+	{
+		if (o.pVertexBuffer) o.pVertexBuffer->Release();
+		if (o.pIndexBuffer) o.pIndexBuffer->Release();
+	}
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -317,15 +318,15 @@ void Graphics::Render()
 
 	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
 	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
-	worlds[0] = spin0 * translation0;
+	objects[0].world = spin0 * translation0;
 
 	const auto spin = XMMatrixRotationZ(-t);
 	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 5.f * std::abs(std::sin(t)), 5.f * std::sin(t));
 	const auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
-	worlds[1] = scale * spin * translation1;
-
+	objects[1].world = scale * spin * translation1;
+	
 	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
-	worlds[2] = scale * spin * translation2;
+	objects[2].world = scale * spin * translation2;
 
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
@@ -336,17 +337,19 @@ void Graphics::Render()
 	pContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
 
-	for (size_t i = 0; i < objects.size(); i++)
+	for (const auto& o : objects)
 	{
-		CreateVertexBuffer(objects[i].GetMesh()->Vertices());
-		CreateIndexBuffer(objects[i].GetMesh()->Indices());
+		UINT stride = sizeof(SimpleVertex);
+		UINT offset = 0;
+		pContext->IASetVertexBuffers(0, 1, &o.pVertexBuffer, &stride, &offset);
+		pContext->IASetIndexBuffer(o.pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 		ConstantBuffer cb;
-		cb.world = XMMatrixTranspose(worlds[i]);
+		cb.world = XMMatrixTranspose(o.world);
 		cb.view = XMMatrixTranspose(view);
 		cb.projection = XMMatrixTranspose(projection);
 		pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
 
-		pContext->DrawIndexed(objects[i].GetMesh()->Indices().size(), 0, 0);
+		pContext->DrawIndexed(o.obj->GetMesh().Indices().size(), 0, 0);
 	}
 }

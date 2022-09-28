@@ -86,11 +86,6 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	return pwnd->HandleMsg(hwnd, msg, wParam, lParam);
 }
 
-Graphics& Window::Gfx()
-{
-	return *pGfx;
-}
-
 LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	static WindowsMessageMap mm;

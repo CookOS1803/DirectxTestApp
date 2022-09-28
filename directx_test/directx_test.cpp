@@ -4,11 +4,14 @@
 #include "WindowsMessageMap.h"
 #include "Window.h"
 #include "SceneObject.h"
+#include "Scene.h"
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Window wnd(1600, 900, L"nu window");
 	//wnd.Gfx().SetFullscreenState(true);
+
+	Scene scene(wnd.Gfx());
 
 	Mesh mesh;
 	mesh.SetVertices({
@@ -189,14 +192,14 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	SceneObject o2;
 	o2.SetMesh(mesh2);
-	wnd.Gfx().AddObject(o2);
+	scene.AddObject(o2);
 
 	for (size_t i = 0; i < 2; i++)
 	{
 		SceneObject o;
 		o.SetMesh(mesh);
 
-		wnd.Gfx().AddObject(o);
+		scene.AddObject(o);
 	}
 
 	MSG msg{};
@@ -213,9 +216,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		}
 		else
 		{
-			wnd.Gfx().Render();
+			wnd.Gfx()->Render();
 
-			wnd.Gfx().EndFrame();
+			wnd.Gfx()->EndFrame();
 		}
 	}
 

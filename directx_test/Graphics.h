@@ -2,7 +2,6 @@
 #include "NormWin.h"
 #include <d3d11.h>
 #include <xnamath.h>
-#include <initializer_list>
 #include <vector>
 #include "Camera.h"
 #include "SimpleVertex.h"
@@ -17,6 +16,17 @@ struct ConstantBuffer
 
 class Graphics
 {
+	struct GraphicObject
+	{
+		SceneObject* obj = nullptr;
+		XMMATRIX world;
+		ID3D11Buffer* pVertexBuffer = nullptr;
+		ID3D11Buffer* pIndexBuffer = nullptr;
+
+		GraphicObject(SceneObject* obj, XMMATRIX world, ID3D11Buffer* pVertexBuffer, ID3D11Buffer* pIndexBuffer)
+			: obj(obj), world(world), pVertexBuffer(pVertexBuffer), pIndexBuffer(pIndexBuffer) {}
+	};
+
 public:
 	Graphics(HWND hWnd, int width, int height);
 	Graphics(const Graphics&) = delete;
@@ -27,9 +37,9 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void Render();
-	void CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
-	void CreateIndexBuffer(const std::vector<WORD>& newIndices);
-	void AddObject(const SceneObject& obj);
+	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
+	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<WORD>& newIndices);
+	void AddObject(SceneObject* obj);
 	
 	constexpr Camera& GetCamera() noexcept {return camera;}
 
@@ -51,8 +61,6 @@ private:
 	IDXGISwapChain* pSwap = nullptr;
 	ID3D11DeviceContext* pContext = nullptr;
 	ID3D11RenderTargetView* pTarget = nullptr;
-	ID3D11Buffer* pVertexBuffer = nullptr;
-	ID3D11Buffer* pIndexBuffer = nullptr;
 	ID3D11Buffer* pConstantBuffer = nullptr;
 	ID3D11Texture2D* pDepthStencil = nullptr;
 	ID3D11DepthStencilView* pDepthStencilView = nullptr;
@@ -64,7 +72,6 @@ private:
 
 	Camera camera;
 
-	std::vector<SceneObject> objects;
-	std::vector<XMMATRIX> worlds;
+	std::vector<GraphicObject> objects;
 };
 
