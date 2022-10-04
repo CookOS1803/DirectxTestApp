@@ -39,7 +39,7 @@ Window::WindowClass::~WindowClass()
 }
 
 Window::Window(int newWidth, int newHeight, const wchar_t* name) noexcept
-	: width(newWidth), height(newHeight), x(0.f), y(0.f), z(-5.f), ax(0.f), ay(0.f), az(0.f)
+	: width(newWidth), height(newHeight)
 {
 	RECT wr{};
 	wr.left = 100;
@@ -93,51 +93,25 @@ LRESULT CALLBACK Window::HandleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 	switch (msg)
 	{
+	case WM_KILLFOCUS:
+		kbd.ClearState();
+		break;
 	case WM_CLOSE:
 		PostQuitMessage(69);
 		break;
-	case WM_KEYDOWN:
+	case WM_KEYDOWN: case WM_SYSKEYDOWN:
 	{
-		const float step = 0.1f;
-		const float astep = 0.1f;
-
-		switch (wParam)
-		{
-		case 'a': case 'A':
-			pGfx->GetCamera().Translate(-step, 0, 0);
-			break;
-		case 'd': case 'D':
-			pGfx->GetCamera().Translate(step, 0, 0);
-			break;
-		case 's': case 'S':
-			pGfx->GetCamera().Translate(0, 0, -step);
-			break;
-		case 'w': case 'W':
-			pGfx->GetCamera().Translate(0, 0, step);
-			break;
-		case VK_DOWN:
-			ax += astep;
-			break;
-		case VK_UP:
-			ax -= astep;
-			break;
-		case VK_LEFT:
-			ay -= astep;
-			break;
-		case VK_RIGHT:
-			ay += astep;
-			break;
-		default:
-			break;
-		}
-
-		ax = std::min(std::max(-XM_PIDIV2, ax), XM_PIDIV2);
-		az = std::min(std::max(-XM_PIDIV2, az), XM_PIDIV2);
-
-		pGfx->GetCamera().SetRotation(ax, ay, az);
+		if (!(lParam & 0x40000000) || kbd.AutorepeatIsEnabled())
+			kbd.OnKeyPressed(static_cast<UCHAR>(wParam));
 
 		break;
 	}
+	case WM_KEYUP: case WM_SYSKEYUP:
+		kbd.OnKeyReleased(static_cast<UCHAR>(wParam));
+		break;
+	case WM_CHAR:
+		kbd.OnChar(static_cast<UCHAR>(wParam));
+		break;
 	}
 
 	return DefWindowProc(hwnd, msg, wParam, lParam);

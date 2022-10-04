@@ -11,8 +11,11 @@ public:
 	Camera();
 
 	void SetPosition(float newX, float newY, float newZ);
+	void SetRotation(XMVECTOR euler);
 	void SetRotation(float aroundX, float aroundY, float aroundZ);
 	void Translate(float x, float y, float z);
+	void Rotate(XMVECTOR euler);
+	void Rotate(float aroundX, float aroundY, float aroundZ);
 
 	constexpr XMVECTOR Position() const noexcept {return position;}
 	constexpr XMVECTOR LookAt() const noexcept {return lookAt;}
@@ -25,5 +28,6 @@ private:
 	XMVECTOR lookAt;
 	XMVECTOR upVector;
 	XMVECTOR forwardVector;
+	XMVECTOR eulerAngles;
 };
 

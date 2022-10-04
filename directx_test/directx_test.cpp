@@ -9,7 +9,6 @@
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Window wnd(1600, 900, L"nu window");
-	//wnd.Gfx().SetFullscreenState(true);
 
 	Scene scene(wnd.Gfx());
 
@@ -200,20 +199,97 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	MSG msg{};
 	BOOL gResult;
-	float sine = 0.f;
+	float stepLeft = 0.f, stepRight = 0.f, stepForward = 0.f, stepBack = 0.f;
+	float rotateLeft = 0.f, rotateRight = 0.f, rotateDown = 0.f, rotateUp = 0.f;
 	while (msg.message != WM_QUIT)
 	{
 		if (gResult = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
-			// for WM_CHAR messages
 			TranslateMessage(&msg);
-
 			DispatchMessage(&msg);
+
+			auto key = wnd.kbd.ReadKey();
+
+			if (key.has_value())
+			{
+				if (key.value().IsPress())
+				{
+					const float step = 0.1f;
+					const float astep = 0.03f;
+
+					switch (key.value().GetCode())
+					{
+					case 'a': case 'A':
+						stepLeft = -step;
+						break;
+					case 'd': case 'D':
+						stepRight = step;
+						break;
+					case 's': case 'S':
+						stepBack = -step;
+						break;
+					case 'w': case 'W':
+						stepForward = step;
+						break;
+					case VK_DOWN:
+						rotateDown = astep;
+						break;
+					case VK_UP:
+						rotateUp = -astep;
+						break;
+					case VK_LEFT:
+						rotateLeft = -astep;
+						break;
+					case VK_RIGHT:
+						rotateRight = astep;
+						break;
+					case VK_SPACE:
+						pObject->SetMesh(pObject->GetMesh() == mesh.get() ? mesh2.get() : mesh.get());
+						break;
+					default:
+						break;
+					}
+				}
+				else
+				{
+					switch (key.value().GetCode())
+					{
+					case 'a': case 'A':
+						stepLeft = 0.f;
+						break;
+					case 'd': case 'D':
+						stepRight = 0.f;
+						break;
+					case 's': case 'S':
+						stepBack = 0.f;
+						break;
+					case 'w': case 'W':
+						stepForward = 0.f;
+						break;
+					case VK_DOWN:
+						rotateDown = 0.f;
+						break;
+					case VK_UP:
+						rotateUp = 0.f;
+						break;
+					case VK_LEFT:
+						rotateLeft = 0.f;
+						break;
+					case VK_RIGHT:
+						rotateRight = 0.f;
+						break;
+					default:
+						break;
+					}
+				}
+			}
 		}
 		else
 		{
-			wnd.Gfx()->Render();
+			wnd.Gfx()->GetCamera().Rotate(rotateDown + rotateUp, rotateLeft + rotateRight, 0.f);
+			wnd.Gfx()->GetCamera().Translate(stepLeft + stepRight, 0, stepBack + stepForward);
 
+			wnd.Gfx()->Render();
 			wnd.Gfx()->EndFrame();
 		}
 	}

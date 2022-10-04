@@ -2,6 +2,7 @@
 #include "NormWin.h"
 #include <memory>
 #include "Graphics.h"
+#include "Keyboard.h"
 
 class Window
 {
@@ -32,6 +33,8 @@ public:
 
 	Graphics* Gfx() { return pGfx.get(); }
 
+	Keyboard kbd;
+
 private:
 
 	static LRESULT CALLBACK HandleMsgSetup(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -41,7 +44,4 @@ private:
 	int width, height;
 	HWND currHwnd;
 	std::unique_ptr<Graphics> pGfx;
-
-	float x, y, z;
-	float ax, ay, az;
 };

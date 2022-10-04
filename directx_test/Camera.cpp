@@ -1,7 +1,8 @@
 #include "Camera.h"
+#include <cmath>
 
 Camera::Camera()
-	: position(), lookAt(), upVector(), forwardVector()
+	: position(), lookAt(), upVector(), forwardVector(), eulerAngles()
 {
 }
 
@@ -11,12 +12,24 @@ void Camera::SetPosition(float newX, float newY, float newZ)
 	lookAt = position + forwardVector;
 }
 
+void Camera::SetRotation(XMVECTOR euler)
+{
+	XMFLOAT3 e;
+	XMStoreFloat3(&e, euler);
+
+	e.x = std::min(std::max(-XM_PIDIV2, e.x), XM_PIDIV2);
+	e.z = std::min(std::max(-XM_PIDIV2, e.z), XM_PIDIV2);
+
+	eulerAngles = XMVectorSet(e.x, e.y, e.z, 0.f);
+
+	forwardVector = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationRollPitchYawFromVector(eulerAngles));
+	lookAt = position + forwardVector;
+	upVector = XMVector3Transform(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), XMMatrixRotationRollPitchYawFromVector(eulerAngles));
+}
+
 void Camera::SetRotation(float aroundX, float aroundY, float aroundZ)
 {
-	forwardVector = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationRollPitchYaw(aroundX, aroundY, aroundZ));
-	lookAt = position + forwardVector;
-	upVector = XMVector3Transform(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), XMMatrixRotationRollPitchYaw(aroundX, aroundY, aroundZ));
-
+	SetRotation(XMVectorSet(aroundX, aroundY, aroundZ, 0.f));
 }
 
 void Camera::Translate(float x, float y, float z)
@@ -37,4 +50,14 @@ void Camera::Translate(float x, float y, float z)
 	position += translation;
 	
 	lookAt = position + forwardVector;
+}
+
+void Camera::Rotate(XMVECTOR euler)
+{
+	SetRotation(eulerAngles + euler);
+}
+
+void Camera::Rotate(float aroundX, float aroundY, float aroundZ)
+{
+	SetRotation(eulerAngles + XMVectorSet(aroundX, aroundY, aroundZ, 0.f));
 }
