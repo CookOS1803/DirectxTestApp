@@ -13,8 +13,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	Scene scene(wnd.Gfx());
 
-	Mesh mesh;
-	mesh.SetVertices({
+	auto mesh = std::make_unique<Mesh>(wnd.Gfx());
+	mesh->SetVertices({
 		{{-0.5f, -1.f, 0.f}, {.5f, 0.f, .5f, 1.f}},
 		{{-std::sin(XM_PIDIV4) / 2.f, -1.f, std::sin(XM_PIDIV4) / 2.f}, {.5f, 0.f, 0.f, 1.f}},
 		{{0.f, -1.f, 0.5f}, {0.f, .5f, .5f, 1.f}},
@@ -51,7 +51,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{{0.f, 1.f, -1.f}, {0.f, 0.f, 1.f, 1.f}},
 		{{-std::sin(XM_PIDIV4), 1.f, -std::sin(XM_PIDIV4)}, {1.f, 0.f, 0.f, 1.f}},
 		});
-	mesh.SetIndices({
+	mesh->SetIndices({
 
 		// inner
 
@@ -158,8 +158,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		0, 16, 7
 		});
 
-	Mesh mesh2;
-	mesh2.SetVertices({
+	auto mesh2 = std::make_unique<Mesh>(wnd.Gfx());
+	mesh2->SetVertices({
 		{ {-1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 1.0f, 1.0f} },
 		{ {1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f, 1.0f} },
 		{ {1.0f, 1.0f, 1.0f},    {0.0f, 1.0f, 1.0f, 1.0f} },
@@ -169,7 +169,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{ {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f} },
 		{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} }
 		});
-	mesh2.SetIndices({
+	mesh2->SetIndices({
 		3,1,0,
 		2,1,3,
 
@@ -189,17 +189,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		7,4,6,
 
 		});
-	
-	SceneObject o2;
-	o2.SetMesh(mesh2);
-	scene.AddObject(o2);
+
+	auto pObject = scene.CreateObject();
+	pObject->SetMesh(mesh2.get());
 
 	for (size_t i = 0; i < 2; i++)
 	{
-		SceneObject o;
-		o.SetMesh(mesh);
-
-		scene.AddObject(o);
+		scene.CreateObject()->SetMesh(mesh.get());
 	}
 
 	MSG msg{};

@@ -223,9 +223,7 @@ void Graphics::AddObject(SceneObject* obj)
 {
 	objects.emplace_back(
 		obj,
-		XMMatrixIdentity(),
-		CreateVertexBuffer(obj->GetMesh().Vertices()),
-		CreateIndexBuffer(obj->GetMesh().Indices())
+		XMMatrixIdentity()
 	);
 }
 
@@ -260,11 +258,6 @@ Graphics::~Graphics()
 	if (pDepthStencil) pDepthStencil->Release();
 	if (pDepthStencilView) pDepthStencilView->Release();
 
-	for (auto& o : objects)
-	{
-		if (o.pVertexBuffer) o.pVertexBuffer->Release();
-		if (o.pIndexBuffer) o.pIndexBuffer->Release();
-	}
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -341,8 +334,9 @@ void Graphics::Render()
 	{
 		UINT stride = sizeof(SimpleVertex);
 		UINT offset = 0;
-		pContext->IASetVertexBuffers(0, 1, &o.pVertexBuffer, &stride, &offset);
-		pContext->IASetIndexBuffer(o.pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		auto vb = o.obj->GetMesh()->VertexBuffer();
+		pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+		pContext->IASetIndexBuffer(o.obj->GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
 
 		ConstantBuffer cb;
 		cb.world = XMMatrixTranspose(o.world);
@@ -350,6 +344,6 @@ void Graphics::Render()
 		cb.projection = XMMatrixTranspose(projection);
 		pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
 
-		pContext->DrawIndexed(o.obj->GetMesh().Indices().size(), 0, 0);
+		pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
 	}
 }

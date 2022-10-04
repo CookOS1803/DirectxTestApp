@@ -9,14 +9,14 @@ class SceneObject
 {
 public:
 
-	constexpr SceneObject() : mesh() {}
-	SceneObject(const SceneObject& other) : mesh(other.mesh) {}
+	constexpr SceneObject() : pMesh(nullptr) {}
+	SceneObject(const SceneObject& other) : pMesh(other.pMesh) {}
 
-	const Mesh& GetMesh() const { return mesh; }
-	void SetMesh(const Mesh& newMesh) { mesh = newMesh; }
+	constexpr const Mesh* GetMesh() const { return pMesh; }
+	constexpr void SetMesh(Mesh* newMesh) { pMesh = newMesh; }
 
 private:
 
-	Mesh mesh;
+	Mesh* pMesh;
 };
 

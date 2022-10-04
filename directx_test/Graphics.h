@@ -20,11 +20,9 @@ class Graphics
 	{
 		SceneObject* obj = nullptr;
 		XMMATRIX world;
-		ID3D11Buffer* pVertexBuffer = nullptr;
-		ID3D11Buffer* pIndexBuffer = nullptr;
 
-		GraphicObject(SceneObject* obj, XMMATRIX world, ID3D11Buffer* pVertexBuffer, ID3D11Buffer* pIndexBuffer)
-			: obj(obj), world(world), pVertexBuffer(pVertexBuffer), pIndexBuffer(pIndexBuffer) {}
+		GraphicObject(SceneObject* obj, XMMATRIX world)
+			: obj(obj), world(world) {}
 	};
 
 public:

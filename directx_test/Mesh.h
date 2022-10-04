@@ -3,24 +3,34 @@
 #include <vector>
 #include "SimpleVertex.h"
 
+struct ID3D11Buffer;
+
 class Mesh
 {
 public:
 
-	constexpr Mesh() : vertices(), indices() {}
-	Mesh(const Mesh& other) : vertices(other.vertices), indices(other.indices) {}
+	constexpr Mesh(class Graphics* gfx) : vertices(), indices(), pGfx(gfx) {}
+	Mesh(const Mesh& other);
+	~Mesh();
 
 	constexpr const std::vector<SimpleVertex>& Vertices() const noexcept { return vertices; }
 	constexpr const std::vector<WORD>& Indices() const noexcept { return indices; }
+	constexpr ID3D11Buffer* VertexBuffer() const noexcept { return pVertexBuffer; }
+	constexpr ID3D11Buffer* IndexBuffer() const noexcept { return pIndexBuffer; }
 
-	constexpr void SetVertices(std::initializer_list<SimpleVertex> newVertices) { vertices = newVertices; }
-	constexpr void SetIndices(std::initializer_list<WORD> newIndices) { indices = newIndices; }
+	void SetVertices(const std::vector<SimpleVertex>& newVertices);
+	void SetIndices(const std::vector<WORD>& newIndices);
 
 	Mesh& operator=(const Mesh& other);
 
 private:
 
+	Graphics* pGfx;
+
 	std::vector<SimpleVertex> vertices;
 	std::vector<WORD> indices;
+
+	ID3D11Buffer* pVertexBuffer = nullptr;
+	ID3D11Buffer* pIndexBuffer = nullptr;
 };
 
