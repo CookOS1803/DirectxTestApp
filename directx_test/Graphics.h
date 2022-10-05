@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "SimpleVertex.h"
 #include "SceneObject.h"
+#include "DXDeleter.h"
 
 struct ConstantBuffer
 {
@@ -29,7 +30,6 @@ public:
 	Graphics(HWND hWnd, int width, int height);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;
-	~Graphics();
 
 	void SetFullscreenState(bool state);
 	void EndFrame();
@@ -55,13 +55,13 @@ private:
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
 
-	ID3D11Device* pDevice = nullptr;
-	IDXGISwapChain* pSwap = nullptr;
-	ID3D11DeviceContext* pContext = nullptr;
-	ID3D11RenderTargetView* pTarget = nullptr;
-	ID3D11Buffer* pConstantBuffer = nullptr;
-	ID3D11Texture2D* pDepthStencil = nullptr;
-	ID3D11DepthStencilView* pDepthStencilView = nullptr;
+	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
+	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
+	std::unique_ptr<ID3D11DeviceContext, DXDeleter<ID3D11DeviceContext>> pContext = nullptr;
+	std::unique_ptr<ID3D11RenderTargetView, DXDeleter<ID3D11RenderTargetView>> pTarget = nullptr;
+	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> pConstantBuffer = nullptr;
+	std::unique_ptr<ID3D11Texture2D, DXDeleter<ID3D11Texture2D>> pDepthStencil = nullptr;
+	std::unique_ptr<ID3D11DepthStencilView, DXDeleter<ID3D11DepthStencilView>> pDepthStencilView = nullptr;
 	ID3D11VertexShader* pVertexShader = nullptr;
 	ID3D11PixelShader* pPixelShader = nullptr;
 

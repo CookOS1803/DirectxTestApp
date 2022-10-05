@@ -11,7 +11,8 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	CreateRenderTargetView();
 	auto format = CreateDepthStencilTexture(width, height);
 	CreateDepthStencilView(format);
-	pContext->OMSetRenderTargets(1, &pTarget, pDepthStencilView);
+	auto tempTarget = pTarget.get();
+	pContext->OMSetRenderTargets(1, &tempTarget, pDepthStencilView.get());
 	InitializeViewport(width, height);
 	auto blob = CompileAndCreateVertexShader();
 	DefineAndCreateInputLayout(blob);
@@ -41,6 +42,10 @@ void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height)
 	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	sd.Flags = 0;
 
+	ID3D11Device* tempDevice = nullptr;
+	IDXGISwapChain* tempSwap = nullptr;
+	ID3D11DeviceContext* tempContext = nullptr;
+
 	D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -50,11 +55,15 @@ void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height)
 		0,
 		D3D11_SDK_VERSION,
 		&sd,
-		&pSwap,
-		&pDevice,
+		&tempSwap,
+		&tempDevice,
 		nullptr,
-		&pContext
+		&tempContext
 	);
+	
+	pDevice.reset(tempDevice);
+	pSwap.reset(tempSwap);
+	pContext.reset(tempContext);
 }
 
 void Graphics::CreateRenderTargetView()
@@ -65,11 +74,15 @@ void Graphics::CreateRenderTargetView()
 
 	if (pBackBuffer)
 	{
+		ID3D11RenderTargetView* tempTarget = nullptr;
+
 		pDevice->CreateRenderTargetView(
 			pBackBuffer,
 			nullptr,
-			&pTarget
+			&tempTarget
 		);
+		
+		pTarget.reset(tempTarget);
 
 		pBackBuffer->Release();
 	}
@@ -90,9 +103,12 @@ DXGI_FORMAT Graphics::CreateDepthStencilTexture(int width, int height)
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
 
-	HRESULT hr = pDevice->CreateTexture2D(&descDepth, NULL, &pDepthStencil);
+	ID3D11Texture2D* tempds = nullptr;
+	HRESULT hr = pDevice->CreateTexture2D(&descDepth, NULL, &tempds);
 	if (FAILED(hr))
 		exit(-3);
+
+	pDepthStencil.reset(tempds);
 
 	return descDepth.Format;
 }
@@ -104,9 +120,12 @@ void Graphics::CreateDepthStencilView(DXGI_FORMAT format)
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 
-	HRESULT hr = pDevice->CreateDepthStencilView(pDepthStencil, &descDSV, &pDepthStencilView);
+	ID3D11DepthStencilView* tempsv = nullptr;
+	HRESULT hr = pDevice->CreateDepthStencilView(pDepthStencil.get(), &descDSV, &tempsv);
 	if (FAILED(hr))
 		exit(-3);
+
+	pDepthStencilView.reset(tempsv);
 }
 
 void Graphics::InitializeViewport(int width, int height)
@@ -234,9 +253,12 @@ void Graphics::CreateConstantBuffer()
 	bd.ByteWidth = sizeof(ConstantBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
-	HRESULT hr = pDevice->CreateBuffer(&bd, NULL, &pConstantBuffer);
+	ID3D11Buffer* tempcb = nullptr;
+	HRESULT hr = pDevice->CreateBuffer(&bd, NULL, &tempcb);
 	if (FAILED(hr))
 		exit(-3);
+
+	pConstantBuffer.reset(tempcb);
 }
 
 void Graphics::InitializeMatrices(int width, int height)
@@ -246,18 +268,6 @@ void Graphics::InitializeMatrices(int width, int height)
 
 	// Initialize the projection matrix
 	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
-}
-
-Graphics::~Graphics()
-{
-	if (pDevice) pDevice->Release();
-	if (pSwap) pSwap->Release();
-	if (pContext) pContext->Release();
-	if (pTarget) pTarget->Release();
-	if (pConstantBuffer) pConstantBuffer->Release();
-	if (pDepthStencil) pDepthStencil->Release();
-	if (pDepthStencilView) pDepthStencilView->Release();
-
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -301,7 +311,7 @@ void Graphics::EndFrame()
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = {red, green, blue, 1.f};
-	pContext->ClearRenderTargetView(pTarget, color);
+	pContext->ClearRenderTargetView(pTarget.get(), color);
 }
 
 void Graphics::Render()
@@ -323,11 +333,12 @@ void Graphics::Render()
 
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
-	ClearBuffer(0, 0, 1);
-	pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	ClearBuffer(0.5, 0.5, 0.5);
+	pContext->ClearDepthStencilView(pDepthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	pContext->VSSetShader(pVertexShader, NULL, 0);
-	pContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
+	auto tempcb = pConstantBuffer.get();
+	pContext->VSSetConstantBuffers(0, 1, &tempcb);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
 
 	for (const auto& o : objects)
@@ -342,7 +353,7 @@ void Graphics::Render()
 		cb.world = XMMatrixTranspose(o.world);
 		cb.view = XMMatrixTranspose(view);
 		cb.projection = XMMatrixTranspose(projection);
-		pContext->UpdateSubresource(pConstantBuffer, 0, NULL, &cb, 0, 0);
+		pContext->UpdateSubresource(pConstantBuffer.get(), 0, NULL, &cb, 0, 0);
 
 		pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
 	}

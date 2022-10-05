@@ -19,7 +19,7 @@ void Mesh::SetVertices(const std::vector<SimpleVertex>& newVertices)
     vertices = newVertices;
 
     if (pVertexBuffer) pVertexBuffer->Release();
-    pVertexBuffer = pGfx->CreateVertexBuffer(vertices);
+    pVertexBuffer.reset(pGfx->CreateVertexBuffer(vertices));
 }
 
 void Mesh::SetIndices(const std::vector<WORD>& newIndices)
@@ -27,7 +27,7 @@ void Mesh::SetIndices(const std::vector<WORD>& newIndices)
     indices = newIndices;
 
     if (pIndexBuffer) pIndexBuffer->Release();
-    pIndexBuffer = pGfx->CreateIndexBuffer(indices);
+    pIndexBuffer.reset(pGfx->CreateIndexBuffer(indices));
 }
 
 Mesh& Mesh::operator=(const Mesh& other)
