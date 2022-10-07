@@ -197,6 +197,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		scene.CreateObject()->SetMesh(mesh.get());
 	}
 
+	scene.CreateUIObject()->SetMesh(mesh.get());
+
 	MSG msg{};
 	BOOL gResult;
 	float stepLeft = 0.f, stepRight = 0.f, stepForward = 0.f, stepBack = 0.f;

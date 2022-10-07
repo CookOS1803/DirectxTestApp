@@ -38,6 +38,7 @@ public:
 	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
 	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<WORD>& newIndices);
 	void AddObject(SceneObject* obj);
+	void AddUIObject(SceneObject* obj);
 	
 	constexpr Camera& GetCamera() noexcept {return camera;}
 
@@ -54,6 +55,7 @@ private:
 	void CompileAndCreatePixelShader();
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
+	void Draw(const Graphics::GraphicObject& o);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
@@ -69,7 +71,9 @@ private:
 	XMMATRIX projection;
 
 	Camera camera;
+	Camera uiCamera;
 
 	std::vector<GraphicObject> objects;
+	std::vector<GraphicObject> uiObjects;
 };
 

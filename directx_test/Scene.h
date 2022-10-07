@@ -14,6 +14,7 @@ public:
 	constexpr const std::vector<std::unique_ptr<SceneObject>>& Objects() const noexcept { return objects; }
 	SceneObject* AddObject(const SceneObject& obj);
 	SceneObject* CreateObject();
+	SceneObject* CreateUIObject();
 
 private:
 

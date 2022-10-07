@@ -5,7 +5,7 @@
 #include <cmath>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
-	: camera(), objects()
+	: camera(), objects(), uiCamera()
 {
 	CreateDeviceAndSwapChain(hWnd, width, height);
 	CreateRenderTargetView();
@@ -246,6 +246,14 @@ void Graphics::AddObject(SceneObject* obj)
 	);
 }
 
+void Graphics::AddUIObject(SceneObject* obj)
+{
+	uiObjects.emplace_back(
+		obj,
+		XMMatrixIdentity()
+	);
+}
+
 void Graphics::CreateConstantBuffer()
 {
 	D3D11_BUFFER_DESC bd{};
@@ -265,6 +273,8 @@ void Graphics::InitializeMatrices(int width, int height)
 {
 	camera.SetRotation(0, 0, 0);
 	camera.SetPosition(0, 0, -5);
+	uiCamera.SetRotation(0, 0, 0);
+	uiCamera.SetPosition(0, 0, -5);
 
 	// Initialize the projection matrix
 	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
@@ -331,7 +341,6 @@ void Graphics::Render()
 	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
 	objects[2].world = scale * spin * translation2;
 
-	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
 	ClearBuffer(0.5, 0.5, 0.5);
 	pContext->ClearDepthStencilView(pDepthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -341,20 +350,32 @@ void Graphics::Render()
 	pContext->VSSetConstantBuffers(0, 1, &tempcb);
 	pContext->PSSetShader(pPixelShader, NULL, 0);
 
+	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 	for (const auto& o : objects)
 	{
-		UINT stride = sizeof(SimpleVertex);
-		UINT offset = 0;
-		auto vb = o.obj->GetMesh()->VertexBuffer();
-		pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-		pContext->IASetIndexBuffer(o.obj->GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
-
-		ConstantBuffer cb;
-		cb.world = XMMatrixTranspose(o.world);
-		cb.view = XMMatrixTranspose(view);
-		cb.projection = XMMatrixTranspose(projection);
-		pContext->UpdateSubresource(pConstantBuffer.get(), 0, NULL, &cb, 0, 0);
-
-		pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
+		Draw(o);
 	}
+
+	view = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
+	for (const auto& o : uiObjects)
+	{
+		Draw(o);
+	}
+}
+
+void Graphics::Draw(const Graphics::GraphicObject& o)
+{
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	auto vb = o.obj->GetMesh()->VertexBuffer();
+	pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+	pContext->IASetIndexBuffer(o.obj->GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+
+	ConstantBuffer cb;
+	cb.world = XMMatrixTranspose(o.world);
+	cb.view = XMMatrixTranspose(view);
+	cb.projection = XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pConstantBuffer.get(), 0, NULL, &cb, 0, 0);
+
+	pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
 }
