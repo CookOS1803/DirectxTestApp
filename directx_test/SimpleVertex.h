@@ -4,12 +4,12 @@
 
 struct SimpleVertex
 {
-	SimpleVertex(XMFLOAT3 position, XMFLOAT4 color, XMFLOAT3 normal)
+	SimpleVertex(XMFLOAT3 position, XMFLOAT3 color, XMFLOAT3 normal)
 		: position(position), color(color), normal(normal)
 	{
 	}
 
 	XMFLOAT3 position;
-	XMFLOAT4 color;
+	XMFLOAT3 color;
 	XMFLOAT3 normal;
 };

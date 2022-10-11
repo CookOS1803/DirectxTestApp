@@ -18,6 +18,20 @@ struct ConstantBuffer
 	XMFLOAT4 outputColor;
 };
 
+struct VertexConstantBuffer
+{
+	XMMATRIX world;
+	XMMATRIX view;
+	XMMATRIX projection;
+};
+
+struct PixelConstantBuffer
+{
+	XMFLOAT4 ambientlLight;
+	XMFLOAT4 directionalLight;
+	XMFLOAT4 lightDirection;
+};
+
 class Graphics
 {
 	struct GraphicObject
@@ -27,15 +41,6 @@ class Graphics
 
 		GraphicObject(SceneObject* obj, XMMATRIX world)
 			: obj(obj), world(world) {}
-	};
-
-	struct TestLight
-	{
-		XMFLOAT4 direction;
-		XMFLOAT4 color;
-
-		TestLight(XMFLOAT4 lightDir, XMFLOAT4 lightColor)
-			: direction(lightDir), color(lightColor) {}
 	};
 
 public:
@@ -67,13 +72,14 @@ private:
 	void CompileAndCreatePixelShader();
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void Draw(const Graphics::GraphicObject& o);
+	void Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
 	std::unique_ptr<ID3D11DeviceContext, DXDeleter<ID3D11DeviceContext>> pContext = nullptr;
 	std::unique_ptr<ID3D11RenderTargetView, DXDeleter<ID3D11RenderTargetView>> pTarget = nullptr;
-	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> pConstantBuffer = nullptr;
+	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> pVertexConstantBuffer = nullptr;
+	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> pPixelConstantBuffer = nullptr;
 	std::unique_ptr<ID3D11Texture2D, DXDeleter<ID3D11Texture2D>> pDepthStencil = nullptr;
 	std::unique_ptr<ID3D11DepthStencilView, DXDeleter<ID3D11DepthStencilView>> pDepthStencilView = nullptr;
 	ID3D11VertexShader* pVertexShader = nullptr;
@@ -88,6 +94,7 @@ private:
 
 	std::vector<GraphicObject> objects;
 	std::vector<GraphicObject> uiObjects;
-	std::vector<TestLight> lights;
+
+	XMFLOAT4 currentLightDir;
 };
 

@@ -20,9 +20,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	CreateConstantBuffer();
 	InitializeMatrices(width, height);
 
-	lights.emplace_back(XMFLOAT4{ -0.577f, 0.577f, -0.577f, 1.0f }, XMFLOAT4{ 0.5f, 0.5f, 0.5f, 1.0f });
-	lights.emplace_back(XMFLOAT4{ 0.0f, 0.0f, -1.0f, 1.0f }, XMFLOAT4{ 0.5f, 0.0f, 0.0f, 1.0f });
-
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
@@ -146,7 +143,7 @@ void Graphics::InitializeViewport(int width, int height)
 ID3DBlob* Graphics::CompileAndCreateVertexShader()
 {
 	ID3DBlob* pVSBlob = nullptr;
-	HRESULT hr = CompileShaderFromFile(L"Tutorial02.fx", "VS", "vs_4_0", &pVSBlob);
+	HRESULT hr = CompileShaderFromFile(L"Light.fx", "VS", "vs_5_0", &pVSBlob);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL,
@@ -171,7 +168,7 @@ void Graphics::DefineAndCreateInputLayout(ID3DBlob* pVSBlob)
 	std::array layout =
 	{
 		D3D11_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		D3D11_INPUT_ELEMENT_DESC{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, sizeof(SimpleVertex::position), D3D11_INPUT_PER_VERTEX_DATA, 0},
+		D3D11_INPUT_ELEMENT_DESC{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(SimpleVertex::position), D3D11_INPUT_PER_VERTEX_DATA, 0},
 		D3D11_INPUT_ELEMENT_DESC{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(SimpleVertex::position) + sizeof(SimpleVertex::color), D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	
@@ -188,7 +185,7 @@ void Graphics::CompileAndCreatePixelShader()
 {
 	// Compile the pixel shader
 	ID3DBlob* pPSBlob = nullptr;
-	HRESULT hr = CompileShaderFromFile(L"Tutorial02.fx", "PS", "ps_4_0", &pPSBlob);
+	HRESULT hr = CompileShaderFromFile(L"Light.fx", "PS", "ps_5_0", &pPSBlob);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL,
@@ -204,14 +201,14 @@ void Graphics::CompileAndCreatePixelShader()
 	if (FAILED(hr))
 		exit(-2);
 
-	hr = CompileShaderFromFile(L"Tutorial02.fx", "PSSolid", "ps_4_0", &pPSBlob);
+	hr = CompileShaderFromFile(L"Light.fx", "PSSolid", "ps_5_0", &pPSBlob);
 	if (FAILED(hr))
 	{
 		MessageBox(NULL,
 			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 
 		exit(-1);
-	}
+}
 
 	hr = pDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &pPixelShaderSolid);
 	pPSBlob->Release();
@@ -277,7 +274,7 @@ void Graphics::CreateConstantBuffer()
 {
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(ConstantBuffer);
+	bd.ByteWidth = sizeof(VertexConstantBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
 	ID3D11Buffer* tempcb = nullptr;
@@ -285,7 +282,16 @@ void Graphics::CreateConstantBuffer()
 	if (FAILED(hr))
 		exit(-3);
 
-	pConstantBuffer.reset(tempcb);
+	pVertexConstantBuffer.reset(tempcb);
+
+	tempcb = nullptr;
+	bd.ByteWidth = sizeof(PixelConstantBuffer);
+
+	hr = pDevice->CreateBuffer(&bd, NULL, &tempcb);
+	if (FAILED(hr))
+		exit(-3);
+
+	pPixelConstantBuffer.reset(tempcb);
 }
 
 void Graphics::InitializeMatrices(int width, int height)
@@ -349,7 +355,7 @@ void Graphics::Render()
 	static float prevt = 0.0f;
 	static float delta = 0.0f;
 	static DWORD dwTimeStart = 0;
-	DWORD dwTimeCur = GetTickCount();
+	DWORD dwTimeCur = GetTickCount64();
 	if (dwTimeStart == 0)
 		dwTimeStart = dwTimeCur;
 	prevt = t;
@@ -358,7 +364,7 @@ void Graphics::Render()
 
 	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
 	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
-	objects[0].world = spin0 * translation0;
+    objects[0].world = spin0 * translation0;
 
 	const auto spin = XMMatrixRotationZ(-t);
 	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 5.f * std::abs(std::sin(t)), 5.f * std::sin(t));
@@ -368,38 +374,48 @@ void Graphics::Render()
 	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
 	objects[2].world = scale * spin * translation2;
 
+	uiObjects[0].world = XMMatrixTranslation(6, -3, 0);
 
-	// Rotate the second light around the origin
-	auto tempDir = lights[1].direction;
-	XMMATRIX mRotate = XMMatrixRotationY(-2.0f * t);
-	XMVECTOR vLightDir = XMLoadFloat4(&lights[1].direction);
-	vLightDir = XMVector3Transform(vLightDir, mRotate);
-	XMStoreFloat4(&lights[1].direction, vLightDir);
-
+	
+	currentLightDir.x = std::sin(t);
+	currentLightDir.y = -1.f;
+	currentLightDir.z = std::cos(t);
 
 	ClearBuffer(0.5, 0.5, 0.5);
 	pContext->ClearDepthStencilView(pDepthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	pContext->VSSetShader(pVertexShader, NULL, 0);
-	auto tempcb = pConstantBuffer.get();
-	pContext->VSSetConstantBuffers(0, 1, &tempcb);
+	auto tempcb = pVertexConstantBuffer.get();
+	pContext->VSSetConstantBuffers(1, 1, &tempcb);
 
-	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
-	for (const auto& o : objects)
-	{
-		Draw(o);
-	}
+	tempcb = pPixelConstantBuffer.get();
+	pContext->PSSetConstantBuffers(0, 1, &tempcb);
 
 	view = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	for (const auto& o : uiObjects)
 	{
-		Draw(o);
+		Draw(o, pPixelShaderSolid);
 	}
 
-	lights[1].direction = tempDir;
+	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
+	for (const auto& o : objects)
+	{
+		Draw(o, pPixelShader);
+	}
+
+	XMMATRIX lw = XMMatrixTranslation(-currentLightDir.x * 20.f, -currentLightDir.y * 10.f, -currentLightDir.z * 20.f);
+
+	VertexConstantBuffer vcb;
+	vcb.world = XMMatrixTranspose(lw);
+	vcb.view = XMMatrixTranspose(view);
+	vcb.projection = XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
+
+	pContext->PSSetShader(pPixelShaderSolid, NULL, 0);
+	pContext->DrawIndexed(objects[0].obj->GetMesh()->Indices().size(), 0, 0);
 }
 
-void Graphics::Draw(const Graphics::GraphicObject& o)
+void Graphics::Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps)
 {
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
@@ -407,31 +423,19 @@ void Graphics::Draw(const Graphics::GraphicObject& o)
 	pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
 	pContext->IASetIndexBuffer(o.obj->GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
 
-	ConstantBuffer cb;
-	cb.world = XMMatrixTranspose(o.world);
-	cb.view = XMMatrixTranspose(view);
-	cb.projection = XMMatrixTranspose(projection);
-	cb.lightDir[0] = lights[0].direction;
-	cb.lightDir[1] = lights[1].direction;
-	cb.lightColor[0] = lights[0].color;
-	cb.lightColor[1] = lights[1].color;
-	cb.outputColor = XMFLOAT4(0, 0, 0, 1);
-	pContext->UpdateSubresource(pConstantBuffer.get(), 0, NULL, &cb, 0, 0);
+	VertexConstantBuffer vcb;
+	vcb.world = XMMatrixTranspose(o.world);
+	vcb.view = XMMatrixTranspose(view);
+	vcb.projection = XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
 
-	pContext->PSSetShader(pPixelShader, NULL, 0);
+	PixelConstantBuffer pcb;
+	const auto al = 0.1f;
+	pcb.ambientlLight = { al, al, al, 1.f };
+	pcb.directionalLight = { 1.f, 1.f, 1.f, 1.f };
+	pcb.lightDirection = currentLightDir;//{ -0.5f, -1.f, 0.5f, 1.f };
+	pContext->UpdateSubresource(pPixelConstantBuffer.get(), 0, NULL, &pcb, 0, 0);
+
+	pContext->PSSetShader(ps, NULL, 0);
 	pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
-
-	for (const auto& l : lights)
-	{
-		XMMATRIX mLight = XMMatrixTranslationFromVector(5.0f * XMLoadFloat4(&l.direction));
-		XMMATRIX mLightScale = XMMatrixScaling(0.2f, 0.2f, 0.2f);
-		mLight = mLightScale * mLight;
-	
-		cb.world = XMMatrixTranspose(mLight);
-		cb.outputColor = l.color;
-		pContext->UpdateSubresource(pConstantBuffer.get(), 0, NULL, &cb, 0, 0);
-	
-		pContext->PSSetShader(pPixelShaderSolid, NULL, 0);
-		pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
-	}
 }
