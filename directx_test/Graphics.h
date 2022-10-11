@@ -7,6 +7,7 @@
 #include "SimpleVertex.h"
 #include "SceneObject.h"
 #include "DXDeleter.h"
+#include "Timer.h"
 
 struct ConstantBuffer
 {
@@ -72,7 +73,7 @@ private:
 	void CompileAndCreatePixelShader();
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps);
+	void Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps, XMMATRIX proj);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
@@ -88,6 +89,7 @@ private:
 
 	XMMATRIX view;
 	XMMATRIX projection;
+	XMMATRIX uiProjection;
 
 	Camera camera;
 	Camera uiCamera;
@@ -96,5 +98,7 @@ private:
 	std::vector<GraphicObject> uiObjects;
 
 	XMFLOAT4 currentLightDir;
+
+	Timer timer;
 };
 

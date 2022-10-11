@@ -303,6 +303,7 @@ void Graphics::InitializeMatrices(int width, int height)
 
 	// Initialize the projection matrix
 	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
+	uiProjection = XMMatrixOrthographicLH(width / 100, height / 100, 0.01f, 100.0f);
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -352,15 +353,17 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 void Graphics::Render()
 {
 	static float t = 0.0f;
-	static float prevt = 0.0f;
-	static float delta = 0.0f;
-	static DWORD dwTimeStart = 0;
-	DWORD dwTimeCur = GetTickCount64();
-	if (dwTimeStart == 0)
-		dwTimeStart = dwTimeCur;
-	prevt = t;
-	t = (dwTimeCur - dwTimeStart) / 1000.0f;
-	delta = t - prevt;
+	//static float prevt = 0.0f;
+	//static float delta = 0.0f;
+	//static DWORD dwTimeStart = 0;
+	//DWORD dwTimeCur = GetTickCount64();
+	//if (dwTimeStart == 0)
+	//	dwTimeStart = dwTimeCur;
+	//prevt = t;
+	//t = (dwTimeCur - dwTimeStart) / 1000.0f;
+	//delta = t - prevt;
+
+	t += timer.Mark();
 
 	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
 	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
@@ -374,7 +377,7 @@ void Graphics::Render()
 	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
 	objects[2].world = scale * spin * translation2;
 
-	uiObjects[0].world = XMMatrixTranslation(6, -3, 0);
+	uiObjects[0].world = XMMatrixRotationRollPitchYaw(XM_PIDIV2, 0, 0) * XMMatrixTranslation(6, -3, 0);
 
 	
 	currentLightDir.x = std::sin(t);
@@ -394,13 +397,13 @@ void Graphics::Render()
 	view = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	for (const auto& o : uiObjects)
 	{
-		Draw(o, pPixelShaderSolid);
+		Draw(o, pPixelShaderSolid, uiProjection);
 	}
 
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 	for (const auto& o : objects)
 	{
-		Draw(o, pPixelShader);
+		Draw(o, pPixelShader, projection);
 	}
 
 	XMMATRIX lw = XMMatrixTranslation(-currentLightDir.x * 20.f, -currentLightDir.y * 10.f, -currentLightDir.z * 20.f);
@@ -415,7 +418,7 @@ void Graphics::Render()
 	pContext->DrawIndexed(objects[0].obj->GetMesh()->Indices().size(), 0, 0);
 }
 
-void Graphics::Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps)
+void Graphics::Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps, XMMATRIX proj)
 {
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
@@ -426,14 +429,14 @@ void Graphics::Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps)
 	VertexConstantBuffer vcb;
 	vcb.world = XMMatrixTranspose(o.world);
 	vcb.view = XMMatrixTranspose(view);
-	vcb.projection = XMMatrixTranspose(projection);
+	vcb.projection = XMMatrixTranspose(proj);
 	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
 
 	PixelConstantBuffer pcb;
 	const auto al = 0.1f;
 	pcb.ambientlLight = { al, al, al, 1.f };
 	pcb.directionalLight = { 1.f, 1.f, 1.f, 1.f };
-	pcb.lightDirection = currentLightDir;//{ -0.5f, -1.f, 0.5f, 1.f };
+	pcb.lightDirection = currentLightDir;
 	pContext->UpdateSubresource(pPixelConstantBuffer.get(), 0, NULL, &pcb, 0, 0);
 
 	pContext->PSSetShader(ps, NULL, 0);

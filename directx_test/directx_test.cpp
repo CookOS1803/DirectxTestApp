@@ -6,158 +6,216 @@
 #include "SceneObject.h"
 #include "Scene.h"
 
+float sind(float a)
+{
+	return std::sin(a * (XM_PI / 180));
+}
+
+float cosd(float a)
+{
+	return std::cos(a * (XM_PI / 180));
+}
+
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Window wnd(1600, 900, L"nu window");
 
 	Scene scene(wnd.Gfx());
 
-	/*
+	const auto sine = std::sin(XM_PIDIV4);
+
 	auto mesh = std::make_unique<Mesh>(wnd.Gfx());
 	mesh->SetVertices({
-		{{-0.5f, -1.f, 0.f}, {.5f, 0.f, .5f, 1.f}},
-		{{-std::sin(XM_PIDIV4) / 2.f, -1.f, std::sin(XM_PIDIV4) / 2.f}, {.5f, 0.f, 0.f, 1.f}},
-		{{0.f, -1.f, 0.5f}, {0.f, .5f, .5f, 1.f}},
-		{{std::sin(XM_PIDIV4) / 2.f, -1.f, std::sin(XM_PIDIV4) / 2.f}, {0.f, 0.f, .5f, 1.f}},
-		{{0.5f, -1.f, 0.f}, {.5f, .5f, 0.f, 1.f}},
-		{{std::sin(XM_PIDIV4) / 2.f, -1.f, -std::sin(XM_PIDIV4) / 2.f}, {0.f, .5f, 0.f, 1.f}},
-		{{0.f, -1.f, -0.5f}, {0.f, 0.f, .5f, 1.f}},
-		{{-std::sin(XM_PIDIV4) / 2.f, -1.f, -std::sin(XM_PIDIV4) / 2.f}, {.5f, 0.f, 0.f, 1.f}},
 
-		{{-0.5f, 1.f, 0.f}, {.5f, 0.f, .5f, 1.f}},
-		{{-std::sin(XM_PIDIV4) / 2.f, 1.f, std::sin(XM_PIDIV4) / 2.f}, {.5f, 0.f, 0.f, 1.f}},
-		{{0.f, 1.f, 0.5f}, {0.f, .5f, .5f, 1.f}},
-		{{std::sin(XM_PIDIV4) / 2.f, 1.f, std::sin(XM_PIDIV4) / 2.f}, {0.f, 0.f, .5f, 1.f}},
-		{{0.5f, 1.f, 0.f}, {.5f, .5f, 0.f, 1.f}},
-		{{std::sin(XM_PIDIV4) / 2.f, 1.f, -std::sin(XM_PIDIV4) / 2.f}, {0.f, .5f, 0.f, 1.f}},
-		{{0.f, 1.f, -0.5f}, {0.f, 0.f, .5f, 1.f}},
-		{{-std::sin(XM_PIDIV4) / 2.f, 1.f, -std::sin(XM_PIDIV4) / 2.f}, {.5f, 0.f, 0.f, 1.f}},
+		// bottom 0-15
 
-		{{-1.f, -1.f, 0.f}, {1.f, 0.f, 1.f, 1.f}},
-		{{-std::sin(XM_PIDIV4), -1.f, std::sin(XM_PIDIV4)}, {1.f, 0.f, 0.f, 1.f}},
-		{{0.f, -1.f, 1.f}, {0.f, 1.f, 1.f, 1.f}},
-		{{std::sin(XM_PIDIV4), -1.f, std::sin(XM_PIDIV4)}, {0.f, 0.f, 1.f, 1.f}},
-		{{1.f, -1.f, 0.f}, {1.f, 1.f, 0.f, 1.f}},
-		{{std::sin(XM_PIDIV4), -1.f, -std::sin(XM_PIDIV4)}, {0.f, 1.f, 0.f, 1.f}},
-		{{0.f, -1.f, -1.f}, {0.f, 0.f, 1.f, 1.f}},
-		{{-std::sin(XM_PIDIV4), -1.f, -std::sin(XM_PIDIV4)}, {1.f, 0.f, 0.f, 1.f}},
+		{{-0.5f,       -1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{-sine / 2.f, -1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{0.f,         -1.f, 0.5f},        {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{sine / 2.f,  -1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{0.5f,        -1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{sine / 2.f,  -1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{0.f,         -1.f, -0.5f},       {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{-sine / 2.f, -1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{-1.f,        -1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{-sine,       -1.f, sine},        {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{0.f,         -1.f, 1.f},         {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{sine,        -1.f, sine},        {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{1.f,         -1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{sine,        -1.f, -sine},       {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{0.f,         -1.f, -1.f},        {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
+		{{-sine,       -1.f, -sine},       {1.f, 0.f, 0.f}, {0.f, -1.f, 0.f}},
 
-		{{-1.f, 1.f, 0.f}, {1.f, 0.f, 1.f, 1.f}},
-		{{-std::sin(XM_PIDIV4), 1.f, std::sin(XM_PIDIV4)}, {1.f, 0.f, 0.f, 1.f}},
-		{{0.f, 1.f, 1.f}, {0.f, 1.f, 1.f, 1.f}},
-		{{std::sin(XM_PIDIV4), 1.f, std::sin(XM_PIDIV4)}, {0.f, 0.f, 1.f, 1.f}},
-		{{1.f, 1.f, 0.f}, {1.f, 1.f, 0.f, 1.f}},
-		{{std::sin(XM_PIDIV4), 1.f, -std::sin(XM_PIDIV4)}, {0.f, 1.f, 0.f, 1.f}},
-		{{0.f, 1.f, -1.f}, {0.f, 0.f, 1.f, 1.f}},
-		{{-std::sin(XM_PIDIV4), 1.f, -std::sin(XM_PIDIV4)}, {1.f, 0.f, 0.f, 1.f}},
+		// top 16-31
+
+		{{-0.5f,       1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{-sine / 2.f, 1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{0.f,         1.f, 0.5f},        {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{sine / 2.f,  1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{0.5f,        1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{sine / 2.f,  1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{0.f,         1.f, -0.5f},       {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{-sine / 2.f, 1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{-1.f,        1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{-sine,       1.f, sine},        {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{0.f,         1.f, 1.f},         {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{sine,        1.f, sine},        {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{1.f,         1.f, 0.f},         {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{sine,        1.f, -sine},       {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{0.f,         1.f, -1.f},        {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+		{{-sine,       1.f, -sine},       {1.f, 0.f, 0.f}, {0.f, 1.f, 0.f}},
+
+		// inner 32-63
+
+		{{-0.5f,       -1.f, 0.f},         {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+		{{-sine / 2.f, -1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+		{{-0.5f,       1.f, 0.f},          {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+		{{-sine / 2.f, 1.f, sine / 2.f},   {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},										   
+		{{-sine / 2.f, -1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{0.f,         -1.f, 0.5f},        {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{-sine / 2.f, 1.f, sine / 2.f},   {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{0.f,         1.f, 0.5f},         {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},		
+		{{0.f,         -1.f, 0.5f},        {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{sine / 2.f,  -1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{0.f,         1.f, 0.5f},         {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{sine / 2.f,  1.f, sine / 2.f},   {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},										   
+		{{sine / 2.f,  -1.f, sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{0.5f,        -1.f, 0.f},         {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{sine / 2.f,  1.f, sine / 2.f},   {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{0.5f,        1.f, 0.f},          {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{0.5f,        -1.f, 0.f},         {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{sine / 2.f,  -1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{0.5f,        1.f, 0.f},          {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{sine / 2.f,  1.f, -sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{sine / 2.f,  -1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{0.f,         -1.f, -0.5f},       {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{sine / 2.f,  1.f, -sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{0.f,         1.f, -0.5f},        {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{0.f,         -1.f, -0.5f},       {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{-sine / 2.f, -1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{0.f,         1.f, -0.5f},        {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{-sine / 2.f, 1.f, -sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{-sine / 2.f, -1.f, -sine / 2.f}, {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-0.5f,         -1.f, 0.f},       {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-sine / 2.f, 1.f, -sine / 2.f},  {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-0.5f,         1.f, 0.f},        {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+
+		// outer 64-95
+
+		{{-1.f,  -1.f, 0.f},   {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-sine, -1.f, sine},  {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-1.f,  1.f, 0.f},    {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-sine, 1.f, sine},   {1.f, 0.f, 0.f}, {cosd(157.5f), 0.f, sind(157.5f)}},
+		{{-sine, -1.f, sine},  {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{0.f,   -1.f, 1.f},   {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{-sine, 1.f, sine},   {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{0.f,   1.f, 1.f},    {1.f, 0.f, 0.f}, {cosd(112.5f), 0.f, sind(112.5f)}},
+		{{0.f,   -1.f, 1.f},   {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{sine,  -1.f, sine},  {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{0.f,   1.f, 1.f},    {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{sine,  1.f, sine},   {1.f, 0.f, 0.f}, {cosd(67.5f), 0.f, sind(67.5f)}},
+		{{sine,  -1.f, sine},  {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{1.f,   -1.f, 0.f},   {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{sine,  1.f, sine},   {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{1.f,   1.f, 0.f},    {1.f, 0.f, 0.f}, {cosd(22.5f), 0.f, sind(22.5f)}},
+		{{1.f,   -1.f, 0.f},   {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{sine,  -1.f, -sine}, {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{1.f,   1.f, 0.f},    {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{sine,  1.f, -sine},  {1.f, 0.f, 0.f}, {cosd(-22.5f), 0.f, sind(-22.5f)}},
+		{{sine,  -1.f, -sine}, {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{0.f,   -1.f, -1.f},  {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{sine,  1.f, -sine},  {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{0.f,   1.f, -1.f},   {1.f, 0.f, 0.f}, {cosd(-67.5f), 0.f, sind(-67.5f)}},
+		{{0.f,   -1.f, -1.f},  {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{-sine, -1.f, -sine}, {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{0.f,   1.f, -1.f},   {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{-sine, 1.f, -sine},  {1.f, 0.f, 0.f}, {cosd(-112.5f), 0.f, sind(-112.5f)}},
+		{{-sine, -1.f, -sine}, {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+		{{-1.f,   -1.f, 0.f},  {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+		{{-sine, 1.f, -sine},  {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+		{{-1.f,   1.f, 0.f},   {1.f, 0.f, 0.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}},
+
 		});
 	mesh->SetIndices({
 
+		// bottom
+		 
+		0	,	9	,	8	,
+		0	,	1	,	9	,
+		1	,	10	,	9	,
+		1	,	2	,	10	,
+		2	,	11	,	10	,
+		2	,	3	,	11	,
+		3	,	12	,	11	,
+		3	,	4	,	12	,
+		4	,	13	,	12	,
+		4	,	5	,	13	,
+		5	,	14	,	13	,
+		5	,	6	,	14	,
+		6	,	15	,	14	,
+		6	,	7	,	15	,
+		7	,	8	,	15	,
+		7	,	0	,	8	,
+
+		// top
+
+		16	,	24	,	25	,
+		16	,	25	,	17	,
+		17	,	25	,	26	,
+		17	,	26	,	18	,
+		18	,	26	,	27	,
+		18	,	27	,	19	,
+		19	,	27	,	28	,
+		19	,	28	,	20	,
+		20	,	28	,	29	,
+		20	,	29	,	21	,
+		21	,	29	,	30	,
+		21	,	30	,	22	,
+		22	,	30	,	31	,
+		22	,	31	,	23	,
+		23	,	31	,	24	,
+		23	,	24	,	16	,
+
 		// inner
 
-		0, 8, 9,
-		9, 1, 0,
+		32	,	34	,	35	,
+		32	,	35	,	33	,
+		36	,	38	,	39	,
+		36	,	39	,	37	,
+		40	,	42	,	43	,
+		40	,	43	,	41	,
+		44	,	46	,	47	,
+		44	,	47	,	45	,
+		48	,	50	,	51	,
+		48	,	51	,	49	,
+		52	,	54	,	55	,
+		52	,	55	,	53	,
+		56	,	58	,	59	,
+		56	,	59	,	57	,
+		60	,	62	,	63	,
+		60	,	63	,	61	,
 
-		1, 9, 10,
-		10, 2, 1,
+		// outer
 
-		2, 10, 11,
-		11, 3, 2,
+		64	,	67	,	66	,
+		64	,	65	,	67	,
+		68	,	71	,	70	,
+		68	,	69	,	71	,
+		72	,	75	,	74	,
+		72	,	73	,	75	,
+		76	,	79	,	78	,
+		76	,	77	,	79	,
+		80	,	83	,	82	,
+		80	,	81	,	83	,
+		84	,	87	,	86	,
+		84	,	85	,	87	,
+		88	,	91	,	90	,
+		88	,	89	,	91	,
+		92	,	95	,	94	,
+		92	,	93	,	95	,
 
-		3, 11, 12,
-		12, 4, 3,
 
-		4, 12, 13,
-		13, 5, 4,
-
-		5, 13, 14,
-		14, 6, 5,
-
-		6, 14, 15,
-		15, 7, 6,
-
-		7, 15, 8,
-		8, 0, 7,
-
-		//outer
-
-		16, 25, 24,
-		16, 17, 25,
-
-		17, 26, 25,
-		17, 18, 26,
-
-		18, 27, 26,
-		18, 19, 27,
-
-		19, 28, 27,
-		19, 20, 28,
-
-		20, 29, 28,
-		20, 21, 29,
-
-		21, 30, 29,
-		21, 22, 30,
-
-		22, 31, 30,
-		22, 23, 31,
-
-		23, 24, 31,
-		23, 16, 24,
-
-		//top
-
-		8, 24, 25,
-		25, 9, 8,
-
-		9, 25, 26,
-		26, 10, 9,
-
-		10, 26, 27,
-		27,	11, 10,
-
-		11, 27, 28,
-		28, 12, 11,
-
-		12, 28, 29,
-		29, 13, 12,
-
-		13, 29, 30,
-		30, 14, 13,
-
-		14, 30, 31,
-		31, 15, 14,
-
-		15, 31, 24,
-		24, 8, 15,
-
-		//bottom
-
-		0, 17, 16,
-		1, 17, 0,
-
-		1, 18, 17,
-		2, 18, 1,
-
-		2, 19, 18,
-		3, 19, 2,
-
-		3, 20, 19,
-		4, 20, 3,
-
-		4, 21, 20,
-		5, 21, 4,
-
-		5, 22, 21,
-		6, 22, 5,
-
-		6, 23, 22,
-		7, 23, 6,
-
-		7, 16, 23,
-		0, 16, 7
 		});
-	*/
 
 	auto mesh2 = std::make_unique<Mesh>(wnd.Gfx());
 	mesh2->SetVertices({
@@ -191,16 +249,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{ {1.0f, 1.0f, 1.0f},   {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f} },
 		{ {-1.0f, 1.0f, 1.0f},  {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f} }
 		});
-	//mesh2->SetVertices({
-	//	{ {-1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 1.0f, 1.0f} },
-	//	{ {1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f, 1.0f} },
-	//	{ {1.0f, 1.0f, 1.0f},    {0.0f, 1.0f, 1.0f, 1.0f} },
-	//	{ {-1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f, 1.0f} },
-	//	{ {-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-	//	{ {1.0f, -1.0f, -1.0f},  {1.0f, 1.0f, 0.0f, 1.0f} },
-	//	{ {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f} },
-	//	{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} }
-	//	});
 	mesh2->SetIndices({
 		3,1,0,
 		2,1,3,
@@ -222,15 +270,15 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		});
 
-	auto pObject = scene.CreateObject();
-	pObject->SetMesh(mesh2.get());
+	scene.CreateObject()->SetMesh(mesh.get());
 
 	for (size_t i = 0; i < 2; i++)
 	{
 		scene.CreateObject()->SetMesh(mesh2.get());
 	}
 
-	scene.CreateUIObject()->SetMesh(mesh2.get());
+	auto pObject = scene.CreateUIObject();
+	pObject->SetMesh(mesh2.get());
 
 	MSG msg{};
 	BOOL gResult;
@@ -279,7 +327,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 						rotateRight = astep;
 						break;
 					case VK_SPACE:
-						//pObject->SetMesh(pObject->GetMesh() == mesh.get() ? mesh2.get() : mesh.get());
+						pObject->SetMesh(pObject->GetMesh() == mesh.get() ? mesh2.get() : mesh.get());
 						break;
 					default:
 						break;
