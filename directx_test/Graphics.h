@@ -13,6 +13,9 @@ struct ConstantBuffer
 	XMMATRIX world;
 	XMMATRIX view;
 	XMMATRIX projection;
+	XMFLOAT4 lightDir[2];
+	XMFLOAT4 lightColor[2];
+	XMFLOAT4 outputColor;
 };
 
 class Graphics
@@ -24,6 +27,15 @@ class Graphics
 
 		GraphicObject(SceneObject* obj, XMMATRIX world)
 			: obj(obj), world(world) {}
+	};
+
+	struct TestLight
+	{
+		XMFLOAT4 direction;
+		XMFLOAT4 color;
+
+		TestLight(XMFLOAT4 lightDir, XMFLOAT4 lightColor)
+			: direction(lightDir), color(lightColor) {}
 	};
 
 public:
@@ -66,6 +78,7 @@ private:
 	std::unique_ptr<ID3D11DepthStencilView, DXDeleter<ID3D11DepthStencilView>> pDepthStencilView = nullptr;
 	ID3D11VertexShader* pVertexShader = nullptr;
 	ID3D11PixelShader* pPixelShader = nullptr;
+	ID3D11PixelShader* pPixelShaderSolid = nullptr;
 
 	XMMATRIX view;
 	XMMATRIX projection;
@@ -75,5 +88,6 @@ private:
 
 	std::vector<GraphicObject> objects;
 	std::vector<GraphicObject> uiObjects;
+	std::vector<TestLight> lights;
 };
 

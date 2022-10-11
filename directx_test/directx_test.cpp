@@ -12,6 +12,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	Scene scene(wnd.Gfx());
 
+	/*
 	auto mesh = std::make_unique<Mesh>(wnd.Gfx());
 	mesh->SetVertices({
 		{{-0.5f, -1.f, 0.f}, {.5f, 0.f, .5f, 1.f}},
@@ -156,18 +157,50 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		7, 16, 23,
 		0, 16, 7
 		});
+	*/
 
 	auto mesh2 = std::make_unique<Mesh>(wnd.Gfx());
 	mesh2->SetVertices({
-		{ {-1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 1.0f, 1.0f} },
-		{ {1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f, 1.0f} },
-		{ {1.0f, 1.0f, 1.0f},    {0.0f, 1.0f, 1.0f, 1.0f} },
-		{ {-1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f, 1.0f} },
-		{ {-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
-		{ {1.0f, -1.0f, -1.0f},  {1.0f, 1.0f, 0.0f, 1.0f} },
-		{ {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f} },
-		{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} }
+		{ {-1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+		{ {1.0f, 1.0f, -1.0f},  {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+		{ {1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+		{ {-1.0f, 1.0f, 1.0f},  {1.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f} },
+		  						
+		{ {-1.0f, -1.0f, -1.0f},{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+		{ {1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+		{ {1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+		{ {-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f} },
+		  						 
+		{ {-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+		{ {-1.0f, -1.0f, -1.0f},{0.0f, 0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+		{ {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+		{ {-1.0f, 1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f} },
+		  						
+		{ {1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} },
+		{ {1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} },
+		{ {1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} },
+		{ {1.0f, 1.0f, 1.0f},   {0.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} },
+		  						
+		{ {-1.0f, -1.0f, -1.0f},{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f} },
+		{ {1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f} },
+		{ {1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f} },
+		{ {-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f} },
+		  						
+		{ {-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} },
+		{ {1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} },
+		{ {1.0f, 1.0f, 1.0f},   {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} },
+		{ {-1.0f, 1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f} }
 		});
+	//mesh2->SetVertices({
+	//	{ {-1.0f, 1.0f, -1.0f},  {0.0f, 0.0f, 1.0f, 1.0f} },
+	//	{ {1.0f, 1.0f, -1.0f},   {0.0f, 1.0f, 0.0f, 1.0f} },
+	//	{ {1.0f, 1.0f, 1.0f},    {0.0f, 1.0f, 1.0f, 1.0f} },
+	//	{ {-1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f, 1.0f} },
+	//	{ {-1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 1.0f, 1.0f} },
+	//	{ {1.0f, -1.0f, -1.0f},  {1.0f, 1.0f, 0.0f, 1.0f} },
+	//	{ {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f, 1.0f} },
+	//	{ {-1.0f, -1.0f, 1.0f},  {0.0f, 0.0f, 0.0f, 1.0f} }
+	//	});
 	mesh2->SetIndices({
 		3,1,0,
 		2,1,3,
@@ -194,10 +227,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	for (size_t i = 0; i < 2; i++)
 	{
-		scene.CreateObject()->SetMesh(mesh.get());
+		scene.CreateObject()->SetMesh(mesh2.get());
 	}
 
-	scene.CreateUIObject()->SetMesh(mesh.get());
+	//scene.CreateUIObject()->SetMesh(mesh2.get());
 
 	MSG msg{};
 	BOOL gResult;
@@ -246,7 +279,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 						rotateRight = astep;
 						break;
 					case VK_SPACE:
-						pObject->SetMesh(pObject->GetMesh() == mesh.get() ? mesh2.get() : mesh.get());
+						//pObject->SetMesh(pObject->GetMesh() == mesh.get() ? mesh2.get() : mesh.get());
 						break;
 					default:
 						break;

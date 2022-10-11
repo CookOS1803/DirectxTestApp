@@ -85,5 +85,8 @@
     <FxCompile Include="Tutorial02.fx">
       <Filter>Файлы ресурсов</Filter>
     </FxCompile>
+    <FxCompile Include="Light.fx">
+      <Filter>Файлы ресурсов</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
