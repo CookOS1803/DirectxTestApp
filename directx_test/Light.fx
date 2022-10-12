@@ -11,9 +11,7 @@ struct VertexShaderOutput
 {
 	float4 position : SV_POSITION;
 	float3 color : COLOR;
-	float3 backColor : BACKCOLOR;
 	float3 normalModel : NORMALM;
-	float3 normalView : NORMALV;
 };
 
 // Constant buffer provided by effect
@@ -50,9 +48,6 @@ VertexShaderOutput VS(VertexShaderInput input)
 	float4 normal = float4(input.normal, 0);
 	normal = normalize(mul(normal, modelMatrix));
 	output.normalModel = normal.xyz;
-	// Apply view transform to normal
-	normal = normalize(mul(normal, viewMatrix));
-	output.normalView = normal.xyz;
 
 	// Transfer colors
 	output.color = input.color;

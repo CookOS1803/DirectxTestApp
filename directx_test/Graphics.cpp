@@ -353,16 +353,6 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 void Graphics::Render()
 {
 	static float t = 0.0f;
-	//static float prevt = 0.0f;
-	//static float delta = 0.0f;
-	//static DWORD dwTimeStart = 0;
-	//DWORD dwTimeCur = GetTickCount64();
-	//if (dwTimeStart == 0)
-	//	dwTimeStart = dwTimeCur;
-	//prevt = t;
-	//t = (dwTimeCur - dwTimeStart) / 1000.0f;
-	//delta = t - prevt;
-
 	t += timer.Mark();
 
 	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
