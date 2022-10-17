@@ -1,9 +1,13 @@
+Texture2D txDiffuse : register(t0);
+SamplerState samLinear : register(s0);
+
 // Per-vertex data input to the vertex shader
 struct VertexShaderInput
 {
 	float3 position : POSITION;
 	float3 color : COLOR;
 	float3 normal : NORMAL;
+	float2 texCoord : TEXCOORD;
 };
 
 // Per-vertex data output from the vertex shader
@@ -12,6 +16,7 @@ struct VertexShaderOutput
 	float4 position : SV_POSITION;
 	float3 color : COLOR;
 	float3 normalModel : NORMALM;
+	float2 texCoord : TEXCOORD;
 };
 
 // Constant buffer provided by effect
@@ -52,6 +57,8 @@ VertexShaderOutput VS(VertexShaderInput input)
 	// Transfer colors
 	output.color = input.color;
 
+	output.texCoord = input.texCoord;
+
 	return output;
 }
 
@@ -72,4 +79,9 @@ float4 PS(VertexShaderOutput input) : SV_TARGET
 float4 PSSolid(VertexShaderOutput input) : SV_TARGET
 {
 	return float4(input.color, 1);
+}
+
+float4 PSTexture(VertexShaderOutput input) : SV_TARGET
+{
+	return txDiffuse.Sample(samLinear, input.texCoord) * PS(input); //* float4(input.color, 1);
 }

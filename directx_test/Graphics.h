@@ -61,19 +61,20 @@ public:
 	constexpr Camera& GetCamera() noexcept {return camera;}
 
 	static HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+	ID3D11PixelShader* CompileAndCreatePixelShader(std::wstring_view fileName, std::string_view shaderName, std::string_view shaderVersion);
 
 private:
 	void CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height);
 	void CreateRenderTargetView();
 	[[nodiscard]] DXGI_FORMAT CreateDepthStencilTexture(int width, int height);
 	void CreateDepthStencilView(DXGI_FORMAT format);
+	void CreateTexture();
 	void InitializeViewport(int width, int height);
 	[[nodiscard]] ID3DBlob* CompileAndCreateVertexShader();
 	void DefineAndCreateInputLayout(ID3DBlob* pVSBlob);
-	void CompileAndCreatePixelShader();
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void Draw(const Graphics::GraphicObject& o, ID3D11PixelShader* ps, XMMATRIX proj);
+	void Draw(const Graphics::GraphicObject& o, XMMATRIX proj);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
@@ -83,9 +84,9 @@ private:
 	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> pPixelConstantBuffer = nullptr;
 	std::unique_ptr<ID3D11Texture2D, DXDeleter<ID3D11Texture2D>> pDepthStencil = nullptr;
 	std::unique_ptr<ID3D11DepthStencilView, DXDeleter<ID3D11DepthStencilView>> pDepthStencilView = nullptr;
+	std::unique_ptr<ID3D11ShaderResourceView, DXDeleter<ID3D11ShaderResourceView>> pTextureRV = nullptr;
+	std::unique_ptr<ID3D11SamplerState, DXDeleter<ID3D11SamplerState>> pSamplerLinear = nullptr;
 	ID3D11VertexShader* pVertexShader = nullptr;
-	ID3D11PixelShader* pPixelShader = nullptr;
-	ID3D11PixelShader* pPixelShaderSolid = nullptr;
 
 	XMMATRIX view;
 	XMMATRIX projection;
