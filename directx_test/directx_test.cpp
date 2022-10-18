@@ -20,6 +20,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 {
 	Window wnd(1600, 900, L"nu window");
 
+	//wnd.mouse.EnableRaw();
+
 	Scene scene(wnd.Gfx());
 
 	std::unique_ptr<ID3D11PixelShader, DXDeleter<ID3D11PixelShader>> psLight;
@@ -33,8 +35,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	const auto sine = std::sin(XM_PIDIV4);
 
-	auto mesh = std::make_unique<Mesh>(wnd.Gfx());
-	mesh->SetVertices({
+	auto cylinderMesh = std::make_unique<Mesh>(wnd.Gfx());
+	cylinderMesh->SetVertices({
 
 		// bottom 0-15
 
@@ -144,8 +146,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{{-sine, 1.f, -sine},  {1.f, 1.f, 1.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}, {0.875f, 1.f}},
 		{{-1.f,   1.f, 0.f},   {1.f, 1.f, 1.f}, {cosd(-157.5f), 0.f, sind(-157.5f)}, {1.f, 1.f}   },
 
+		{ {0.f, 0.f, 0.f},   {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f} }
+
 		});
-	mesh->SetIndices({
+	cylinderMesh->SetIndices({
 
 		// bottom
 		 
@@ -225,10 +229,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 
 		});
-	mesh->SetPixelShader(psTexture.get());
+	cylinderMesh->SetPixelShader(psTexture.get());
 
-	auto mesh2 = std::make_unique<Mesh>(wnd.Gfx());
-	mesh2->SetVertices({
+	auto lightedCubeMesh = std::make_unique<Mesh>(wnd.Gfx());
+	lightedCubeMesh->SetVertices({
 		{ {-1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.f, 0.f} },
 		{ {1.0f, 1.0f, -1.0f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.f, 0.f} },
 		{ {1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.f, 1.f} },
@@ -259,7 +263,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{ {1.0f, 1.0f, 1.0f},   {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.f, 1.f} },
 		{ {-1.0f, 1.0f, 1.0f},  {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.f, 1.f} }
 		});
-	mesh2->SetIndices({
+	lightedCubeMesh->SetIndices({
 		3,1,0,
 		2,1,3,
 
@@ -279,22 +283,27 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		23,20,22
 
 		});
-	mesh2->SetPixelShader(psTexture.get());
+	lightedCubeMesh->SetPixelShader(psLight.get());
 
-	scene.CreateObject()->SetMesh(mesh.get());
+	auto solidColorCubeMesh = std::make_unique<Mesh>(*lightedCubeMesh);
+	solidColorCubeMesh->SetPixelShader(psSolidColor.get());
+
+	scene.CreateObject()->SetMesh(cylinderMesh.get());
 
 	for (size_t i = 0; i < 2; i++)
 	{
-		scene.CreateObject()->SetMesh(mesh2.get());
+		scene.CreateObject()->SetMesh(lightedCubeMesh.get());
 	}
 
 	auto pObject = scene.CreateUIObject();
-	pObject->SetMesh(mesh2.get());
+	pObject->SetMesh(solidColorCubeMesh.get());
 
 	MSG msg{};
 	BOOL gResult;
 	float stepLeft = 0.f, stepRight = 0.f, stepForward = 0.f, stepBack = 0.f;
 	float rotateLeft = 0.f, rotateRight = 0.f, rotateDown = 0.f, rotateUp = 0.f;
+	const float step = 0.1f;
+	const float astep = 0.03f;
 	while (msg.message != WM_QUIT)
 	{
 		if (gResult = PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -308,11 +317,12 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			{
 				if (key.value().IsPress())
 				{
-					const float step = 0.1f;
-					const float astep = 0.03f;
 
 					switch (key.value().GetCode())
 					{
+					case VK_ESCAPE:
+						wnd.EnableCursor();
+						break;
 					case 'a': case 'A':
 						stepLeft = -step;
 						break;
@@ -375,6 +385,31 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 					default:
 						break;
 					}
+				}
+			}
+
+			auto mouseEvent = wnd.mouse.Read();
+
+			if (mouseEvent.has_value())
+			{
+				using Event = Mouse::Event::Type;
+
+				switch (mouseEvent.value().GetType())
+				{
+				case Event::LPress:
+					wnd.DisableCursor();
+					break;
+				case Event::Move:
+				{
+					std::wstringstream da;
+
+					da << mouseEvent.value().GetPosX() << " " << mouseEvent.value().GetPosY() << '\0';
+					wnd.SetTitle(da.view());
+
+					break;
+				}
+				default:
+					break;
 				}
 			}
 		}

@@ -3,6 +3,7 @@
 #include <memory>
 #include "Graphics.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 class Window
 {
@@ -34,8 +35,20 @@ public:
 	Graphics* Gfx() { return pGfx.get(); }
 
 	Keyboard kbd;
+	Mouse mouse;
+
+	void EnableCursor() noexcept;
+	void DisableCursor() noexcept;
+	constexpr bool CursorEnabled() const noexcept { return cursorEnabled; }
+	void SetTitle(std::wstring_view title);
+
+	void ConfineCursor() noexcept;
+	void FreeCursor() noexcept;
+	void ShowCursor() noexcept;
+	void HideCursor() noexcept;
 
 private:
+
 
 	static LRESULT CALLBACK HandleMsgSetup(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -44,4 +57,6 @@ private:
 	int width, height;
 	HWND currHwnd;
 	std::unique_ptr<Graphics> pGfx;
+	std::vector<BYTE> rawBuffer;
+	bool cursorEnabled = true;
 };

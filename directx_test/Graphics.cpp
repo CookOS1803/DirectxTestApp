@@ -131,12 +131,12 @@ void Graphics::CreateDepthStencilView(DXGI_FORMAT format)
 void Graphics::CreateTexture()
 {
 	ID3D11ShaderResourceView* tempRV = nullptr;
-	HRESULT hr = D3DX11CreateShaderResourceViewFromFile(pDevice.get(), L"CHE.dds", NULL, NULL, &tempRV, NULL);
+	HRESULT hr = D3DX11CreateShaderResourceViewFromFile(pDevice.get(), L"brick.dds", NULL, NULL, &tempRV, NULL);
 	if (FAILED(hr))
 		exit(-1);
 
 	pTextureRV.reset(tempRV);
-
+	
 	// Create the sample state
 	ID3D11SamplerState* tempSampler = nullptr;
 	D3D11_SAMPLER_DESC sampDesc;
@@ -433,7 +433,7 @@ void Graphics::Draw(const Graphics::GraphicObject& o, XMMATRIX proj)
 	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
 
 	PixelConstantBuffer pcb;
-	const auto al = 1.f;
+	const auto al = .2f;
 	pcb.ambientlLight = { al, al, al, 1.f };
 	pcb.directionalLight = { 1.f, 1.f, 1.f, 1.f };
 	pcb.lightDirection = currentLightDir;
