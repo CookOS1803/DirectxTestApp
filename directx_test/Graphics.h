@@ -74,7 +74,8 @@ private:
 	void DefineAndCreateInputLayout(ID3DBlob* pVSBlob);
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void Draw(const Graphics::GraphicObject& o, XMMATRIX proj);
+	void DrawOld(const Graphics::GraphicObject& o, XMMATRIX proj);
+	void Draw(const SceneObject& object, const Camera& camera1);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;

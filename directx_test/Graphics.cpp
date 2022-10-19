@@ -373,7 +373,7 @@ void Graphics::Render()
 
 	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
 	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
-    //objects[0].world = spin0 * translation0;
+    objects[0].world = spin0 * translation0;
 
 	const auto spin = XMMatrixRotationZ(-t);
 	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 5.f * std::abs(std::sin(t)), 5.f * std::sin(t));
@@ -408,17 +408,17 @@ void Graphics::Render()
 	view = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	for (const auto& o : uiObjects)
 	{
-		Draw(o, uiProjection);
+		DrawOld(o, uiProjection);
 	}
 
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 	for (const auto& o : objects)
 	{
-		Draw(o, projection);
+		DrawOld(o, projection);
 	}
 }
 
-void Graphics::Draw(const Graphics::GraphicObject& o, XMMATRIX proj)
+void Graphics::DrawOld(const Graphics::GraphicObject& o, XMMATRIX proj)
 {
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
@@ -442,3 +442,4 @@ void Graphics::Draw(const Graphics::GraphicObject& o, XMMATRIX proj)
 	pContext->PSSetShader(o.obj->GetMesh()->PixelShader(), NULL, 0);
 	pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
 }
+

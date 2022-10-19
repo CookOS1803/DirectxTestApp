@@ -15,6 +15,11 @@ public:
 	constexpr const Mesh* GetMesh() const { return pMesh; }
 	constexpr void SetMesh(Mesh* newMesh) { pMesh = newMesh; }
 
+	//XMFLOAT3 position;
+	//XMFLOAT3 eulerRotation;
+	//XMFLOAT3 scale;
+
+
 private:
 
 	Mesh* pMesh;
