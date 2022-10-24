@@ -5,6 +5,9 @@
 #include "Window.h"
 #include "SceneObject.h"
 #include "Scene.h"
+#include "CylinderMovement.h"
+#include "CubeMovementTop.h"
+#include "CubeMovementBottom.h"
 
 float sind(float a)
 {
@@ -18,6 +21,9 @@ float cosd(float a)
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	Timer timer;
+	float t = 0.f;
+
 	Window wnd(1600, 900, L"nu window");
 
 	//wnd.mouse.EnableRaw();
@@ -286,17 +292,24 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	auto obj = scene.CreateObject();
 	obj->SetMesh(cylinderMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
+	obj->SetUpdateable<CylinderMovement>();
 
-	for (size_t i = 0; i < 2; i++)
-	{
-		auto o = scene.CreateObject();
-		o->SetMesh(cubeMesh.get());
-		o->GetMeshRenderer().SetPixelShader(psLight.get());
-	}
+	obj = scene.CreateObject();
+	obj->SetMesh(cubeMesh.get());
+	obj->GetMeshRenderer().SetPixelShader(psLight.get());
+	obj->GetTransform().scale = {0.3f, 0.3f, 0.3f};
+	obj->SetUpdateable<CubeMovementTop>();
+
+	obj = scene.CreateObject();
+	obj->SetMesh(cubeMesh.get());
+	obj->GetMeshRenderer().SetPixelShader(psLight.get());
+	obj->GetTransform().scale = { 0.3f, 0.3f, 0.3f };
+	obj->SetUpdateable<CubeMovementBottom>();
 
 	auto pObject = scene.CreateUIObject();
 	pObject->SetMesh(cubeMesh.get());
 	pObject->GetMeshRenderer().SetPixelShader(psSolidColor.get());
+	pObject->GetTransform().position = {5.f, -2.5f, 0.f};
 
 	MSG msg{};
 	BOOL gResult;
@@ -415,11 +428,32 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		}
 		else
 		{
+			float delta = timer.Mark() * 2;
+
 			wnd.Gfx()->GetCamera().Rotate(rotateDown + rotateUp, rotateLeft + rotateRight, 0.f);
 			wnd.Gfx()->GetCamera().Translate(stepLeft + stepRight, 0, stepBack + stepForward);
 
-			wnd.Gfx()->Render();
+			wnd.Gfx()->Render(t);
+
+			for (const auto& o : scene.Objects())
+			{
+				if (o->GetUpdateable() != nullptr)
+					o->GetUpdateable()->Update(delta);
+
+				wnd.Gfx()->Draw(*o);
+			}
+
+			for (const auto& o : scene.UIObjects())
+			{
+				if (o->GetUpdateable() != nullptr)
+					o->GetUpdateable()->Update(delta);
+
+				wnd.Gfx()->DrawUI(*o);
+			}
+
 			wnd.Gfx()->EndFrame();
+
+			t += delta;
 		}
 	}
 

@@ -156,6 +156,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CubeMovementBottom.cpp" />
+    <ClCompile Include="CubeMovementTop.cpp" />
+    <ClCompile Include="CylinderMovement.cpp" />
     <ClCompile Include="directx_test.cpp" />
     <ClCompile Include="DXDeleter.cpp" />
     <ClCompile Include="Graphics.cpp" />
@@ -166,11 +169,15 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Updateable.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WindowsMessageMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CubeMovementBottom.h" />
+    <ClInclude Include="CubeMovementTop.h" />
+    <ClInclude Include="CylinderMovement.h" />
     <ClInclude Include="DXDeleter.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Keyboard.h" />
@@ -182,6 +189,8 @@
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SimpleVertex.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Transform.h" />
+    <ClInclude Include="Updateable.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WindowsMessageMap.h" />
   </ItemGroup>

@@ -286,6 +286,16 @@ void Graphics::AddUIObject(SceneObject* obj)
 	);
 }
 
+void Graphics::Draw(const SceneObject& obj)
+{
+	DrawOld(obj, view, projection);
+}
+
+void Graphics::DrawUI(const SceneObject& obj)
+{
+	DrawOld(obj, uiView, uiProjection);
+}
+
 void Graphics::CreateConstantBuffer()
 {
 	D3D11_BUFFER_DESC bd{};
@@ -366,26 +376,26 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	pContext->ClearRenderTargetView(pTarget.get(), color);
 }
 
-void Graphics::Render()
+void Graphics::Render(float t)
 {
-	static float t = 0.0f;
-	t += timer.Mark();
-
-	const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
-	const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
-    objects[0].world = spin0 * translation0;
-
-	const auto spin = XMMatrixRotationZ(-t);
-	const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 5.f * std::abs(std::sin(t)), 5.f * std::sin(t));
-	const auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
-	objects[1].world = scale * spin * translation1;
-	
-	const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
-	objects[2].world = scale * spin * translation2;
-
-	uiObjects[0].world = XMMatrixRotationRollPitchYaw(XM_PIDIV2, 0, 0) * XMMatrixTranslation(6, -3, 0);
-
-	
+	//static float t = 0.0f;
+	//t += timer.Mark();
+	//
+	//const auto spin0 = XMMatrixRotationZ(std::sin(t - XM_PI));
+	//const auto translation0 = XMMatrixTranslation(0.f, 2 * std::sin(t - XM_PIDIV4), 0.f);
+    //objects[0].world = spin0 * translation0;
+	//
+	//const auto spin = XMMatrixRotationZ(-t);
+	//const auto translation1 = XMMatrixTranslation(5 * std::cos(t) - 5.f, 5.f * std::abs(std::sin(t)), 5.f * std::sin(t));
+	//const auto scale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	//objects[1].world = scale * spin * translation1;
+	//
+	//const auto translation2 = XMMatrixTranslation(5 * std::cos(t) + 5.f, -5.f * std::abs(std::sin(t)), -5.f * std::sin(t));
+	//objects[2].world = scale * spin * translation2;
+	//
+	//uiObjects[0].world = XMMatrixRotationRollPitchYaw(XM_PIDIV2, 0, 0) * XMMatrixTranslation(6, -3, 0);
+	//
+	//
 	currentLightDir.x = std::sin(t);
 	currentLightDir.y = -1.f;
 	currentLightDir.z = std::cos(t);
@@ -405,30 +415,28 @@ void Graphics::Render()
 	pContext->PSSetShaderResources(0, 1, &tempRV);
 	pContext->PSSetSamplers(0, 1, &tempSampler);
 
-	view = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
-	for (const auto& o : uiObjects)
-	{
-		DrawOld(o, uiProjection);
-	}
-
+	uiView = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
-	for (const auto& o : objects)
-	{
-		DrawOld(o, projection);
-	}
 }
 
-void Graphics::DrawOld(const Graphics::GraphicObject& o, XMMATRIX proj)
+void Graphics::DrawOld(const SceneObject& o, XMMATRIX v, XMMATRIX proj)
 {
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
-	auto vb = o.obj->GetMesh()->VertexBuffer();
+	auto vb = o.GetMesh()->VertexBuffer();
 	pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-	pContext->IASetIndexBuffer(o.obj->GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+	pContext->IASetIndexBuffer(o.GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+
+	const auto pos = o.GetTransform().position;
+	const auto rot = o.GetTransform().eulerRotation;
+	const auto sc = o.GetTransform().scale;
+
+	const auto world = XMMatrixScaling(sc.x, sc.y, sc.z) * XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z) *
+		XMMatrixTranslation(pos.x, pos.y, pos.z);
 
 	VertexConstantBuffer vcb;
-	vcb.world = XMMatrixTranspose(o.world);
-	vcb.view = XMMatrixTranspose(view);
+	vcb.world = XMMatrixTranspose(world);
+	vcb.view = XMMatrixTranspose(v);
 	vcb.projection = XMMatrixTranspose(proj);
 	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
 
@@ -439,7 +447,7 @@ void Graphics::DrawOld(const Graphics::GraphicObject& o, XMMATRIX proj)
 	pcb.lightDirection = currentLightDir;
 	pContext->UpdateSubresource(pPixelConstantBuffer.get(), 0, NULL, &pcb, 0, 0);
 
-	pContext->PSSetShader(o.obj->GetMeshRenderer().PixelShader(), NULL, 0);
-	pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
+	pContext->PSSetShader(o.GetMeshRenderer().PixelShader(), NULL, 0);
+	pContext->DrawIndexed(o.GetMesh()->Indices().size(), 0, 0);
 }
 

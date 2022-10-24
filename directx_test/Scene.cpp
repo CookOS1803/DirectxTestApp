@@ -25,9 +25,9 @@ SceneObject* Scene::CreateObject()
 
 SceneObject* Scene::CreateUIObject()
 {
-    objects.emplace_back(std::make_unique<SceneObject>());
+    uiObjects.emplace_back(std::make_unique<SceneObject>());
 
-    auto p = objects.back().get();
+    auto p = uiObjects.back().get();
 
     pGfx->AddUIObject(p);
 

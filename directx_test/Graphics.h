@@ -52,11 +52,13 @@ public:
 	void SetFullscreenState(bool state);
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
-	void Render();
+	void Render(float t);
 	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
 	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<WORD>& newIndices);
 	void AddObject(SceneObject* obj);
 	void AddUIObject(SceneObject* obj);
+	void Draw(const SceneObject& obj);
+	void DrawUI(const SceneObject& obj);
 	
 	constexpr Camera& GetCamera() noexcept {return camera;}
 
@@ -74,8 +76,7 @@ private:
 	void DefineAndCreateInputLayout(ID3DBlob* pVSBlob);
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void DrawOld(const Graphics::GraphicObject& o, XMMATRIX proj);
-	void Draw(const SceneObject& object, const Camera& camera1);
+	void DrawOld(const SceneObject& o, XMMATRIX v, XMMATRIX proj);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
@@ -90,6 +91,7 @@ private:
 	ID3D11VertexShader* pVertexShader = nullptr;
 
 	XMMATRIX view;
+	XMMATRIX uiView;
 	XMMATRIX projection;
 	XMMATRIX uiProjection;
 
@@ -100,7 +102,5 @@ private:
 	std::vector<GraphicObject> uiObjects;
 
 	XMFLOAT4 currentLightDir;
-
-	Timer timer;
 };
 
