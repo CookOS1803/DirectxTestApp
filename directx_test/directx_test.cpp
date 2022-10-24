@@ -9,6 +9,7 @@
 #include "CubeMovementTop.h"
 #include "CubeMovementBottom.h"
 
+
 float sind(float a)
 {
 	return std::sin(a * (XM_PI / 180));

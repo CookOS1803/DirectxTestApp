@@ -204,7 +204,19 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\directxtk_uwp.2022.10.18.2\build\native\directxtk_uwp.targets" Condition="Exists('..\packages\directxtk_uwp.2022.10.18.2\build\native\directxtk_uwp.targets')" />
+    <Import Project="..\packages\directxmesh_uwp.2022.10.18.1\build\native\directxmesh_uwp.targets" Condition="Exists('..\packages\directxmesh_uwp.2022.10.18.1\build\native\directxmesh_uwp.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\directxtk_uwp.2022.10.18.2\build\native\directxtk_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk_uwp.2022.10.18.2\build\native\directxtk_uwp.targets'))" />
+    <Error Condition="!Exists('..\packages\directxmesh_uwp.2022.10.18.1\build\native\directxmesh_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxmesh_uwp.2022.10.18.1\build\native\directxmesh_uwp.targets'))" />
+  </Target>
 </Project>
