@@ -439,7 +439,7 @@ void Graphics::DrawOld(const Graphics::GraphicObject& o, XMMATRIX proj)
 	pcb.lightDirection = currentLightDir;
 	pContext->UpdateSubresource(pPixelConstantBuffer.get(), 0, NULL, &pcb, 0, 0);
 
-	pContext->PSSetShader(o.obj->GetMesh()->PixelShader(), NULL, 0);
+	pContext->PSSetShader(o.obj->GetMeshRenderer().PixelShader(), NULL, 0);
 	pContext->DrawIndexed(o.obj->GetMesh()->Indices().size(), 0, 0);
 }
 

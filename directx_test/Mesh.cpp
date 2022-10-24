@@ -6,7 +6,6 @@ Mesh::Mesh(const Mesh& other)
     p_gfx = other.p_gfx;
     SetVertices(other.m_vertices);
     SetIndices(other.m_indices);
-    p_pixelShader = other.p_pixelShader;
 }
 
 Mesh::~Mesh()

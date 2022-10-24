@@ -229,10 +229,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 
 		});
-	cylinderMesh->SetPixelShader(psTexture.get());
 
-	auto lightedCubeMesh = std::make_unique<Mesh>(wnd.Gfx());
-	lightedCubeMesh->SetVertices({
+	auto cubeMesh = std::make_unique<Mesh>(wnd.Gfx());
+	cubeMesh->SetVertices({
 		{ {-1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.f, 0.f} },
 		{ {1.0f, 1.0f, -1.0f},  {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.f, 0.f} },
 		{ {1.0f, 1.0f, 1.0f},   {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.f, 1.f} },
@@ -263,7 +262,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{ {1.0f, 1.0f, 1.0f},   {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.f, 1.f} },
 		{ {-1.0f, 1.0f, 1.0f},  {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.f, 1.f} }
 		});
-	lightedCubeMesh->SetIndices({
+	cubeMesh->SetIndices({
 		3,1,0,
 		2,1,3,
 
@@ -283,20 +282,21 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		23,20,22
 
 		});
-	lightedCubeMesh->SetPixelShader(psLight.get());
 
-	auto solidColorCubeMesh = std::make_unique<Mesh>(*lightedCubeMesh);
-	solidColorCubeMesh->SetPixelShader(psSolidColor.get());
-
-	scene.CreateObject()->SetMesh(cylinderMesh.get());
+	auto obj = scene.CreateObject();
+	obj->SetMesh(cylinderMesh.get());
+	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
 
 	for (size_t i = 0; i < 2; i++)
 	{
-		scene.CreateObject()->SetMesh(lightedCubeMesh.get());
+		auto o = scene.CreateObject();
+		o->SetMesh(cubeMesh.get());
+		o->GetMeshRenderer().SetPixelShader(psLight.get());
 	}
 
 	auto pObject = scene.CreateUIObject();
-	pObject->SetMesh(solidColorCubeMesh.get());
+	pObject->SetMesh(cubeMesh.get());
+	pObject->GetMeshRenderer().SetPixelShader(psSolidColor.get());
 
 	MSG msg{};
 	BOOL gResult;
