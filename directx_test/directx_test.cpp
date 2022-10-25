@@ -316,6 +316,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	pObject->GetMeshRenderer().SetPixelShader(psSolidColor.get());
 	pObject->GetTransform().position = {5.f, -2.5f, 0.f};
 
+	bool ttt = false;
+
 	MSG msg{};
 	BOOL gResult;
 	float stepLeft = 0.f, stepRight = 0.f, stepForward = 0.f, stepBack = 0.f;
@@ -366,7 +368,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 						rotateRight = astep;
 						break;
 					case VK_SPACE:
-						//pObject->SetMesh(pObject->GetMesh() == mesh.get() ? mesh2.get() : mesh.get());
+						ttt = ttt ? false : true;
 						break;
 					default:
 						break;
@@ -456,7 +458,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				wnd.Gfx()->DrawUI(*o);
 			}
 
-			wnd.Gfx()->DrawText();
+			if (ttt)
+				wnd.Gfx()->DrawText();
 
 			wnd.Gfx()->EndFrame();
 

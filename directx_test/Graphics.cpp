@@ -161,14 +161,13 @@ void Graphics::CreateTexture()
 
 void Graphics::InitializeViewport(int width, int height)
 {
-	D3D11_VIEWPORT vp{};
-	vp.Width = (FLOAT)width;
-	vp.Height = (FLOAT)height;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
-	pContext->RSSetViewports(1, &vp);
+	viewport.Width = (FLOAT)width;
+	viewport.Height = (FLOAT)height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	pContext->RSSetViewports(1, &viewport);
 }
 
 ID3DBlob* Graphics::CompileAndCreateVertexShader()
@@ -399,6 +398,7 @@ void Graphics::Render(float t)
 
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pContext->IASetInputLayout(pVertexLayout);
+	pContext->RSSetViewports(1, &viewport);
 
 	auto tempRV = pTextureRV.get();
 	auto tempSampler = pSamplerLinear.get();
@@ -413,16 +413,22 @@ void Graphics::Render(float t)
 
 void Graphics::DrawText()
 {
+	ID3D11DepthStencilState* st = nullptr;
+	UINT sten = 0;
+	pContext->OMGetDepthStencilState(&st, &sten);
+
 	m_spriteBatch->Begin();
 
-	const auto output = L"Hello World";
+	const auto output = L"Sample Text";
 
 	const auto origin = m_font->MeasureString(output);
-
+	
 	m_font->DrawString(m_spriteBatch.get(), output,
 		m_fontPos, DirectX::Colors::White, 0.f, origin);
 
 	m_spriteBatch->End();
+
+	pContext->OMSetDepthStencilState(st, sten);
 }
 
 void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj)

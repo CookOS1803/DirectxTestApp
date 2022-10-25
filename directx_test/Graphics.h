@@ -92,5 +92,6 @@ private:
 	std::unique_ptr<DirectX::SpriteFont> m_font = nullptr;
 	DirectX::XMVECTOR m_fontPos;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
+	D3D11_VIEWPORT viewport;
 };
 
