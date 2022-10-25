@@ -2,7 +2,6 @@
 #include "NormWin.h"
 #include <vector>
 #include <memory>
-#include <xnamath.h>
 #include <concepts>
 #include "Mesh.h"
 #include "MeshRenderer.h"

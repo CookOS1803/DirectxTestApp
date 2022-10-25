@@ -8,56 +8,56 @@ Camera::Camera()
 
 void Camera::SetPosition(float newX, float newY, float newZ)
 {
-	position = XMVectorSet(newX, newY, newZ, 0.f);
-	lookAt = position + forwardVector;
+	position = DirectX::XMVectorSet(newX, newY, newZ, 0.f);
+	lookAt = DirectX::XMVectorAdd(position, forwardVector);
 }
 
-void Camera::SetRotation(XMVECTOR euler)
+void Camera::SetRotation(DirectX::XMVECTOR euler)
 {
-	XMFLOAT3 e;
-	XMStoreFloat3(&e, euler);
+	DirectX::XMFLOAT3 e;
+	DirectX::XMStoreFloat3(&e, euler);
 
-	e.x = std::min(std::max(-XM_PIDIV2, e.x), XM_PIDIV2);
-	e.z = std::min(std::max(-XM_PIDIV2, e.z), XM_PIDIV2);
+	e.x = std::min(std::max(-DirectX::XM_PIDIV2, e.x), DirectX::XM_PIDIV2);
+	e.z = std::min(std::max(-DirectX::XM_PIDIV2, e.z), DirectX::XM_PIDIV2);
 
-	eulerAngles = XMVectorSet(e.x, e.y, e.z, 0.f);
+	eulerAngles = DirectX::XMVectorSet(e.x, e.y, e.z, 0.f);
 
-	forwardVector = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationRollPitchYawFromVector(eulerAngles));
-	lookAt = position + forwardVector;
-	upVector = XMVector3Transform(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), XMMatrixRotationRollPitchYawFromVector(eulerAngles));
+	forwardVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), DirectX::XMMatrixRotationRollPitchYawFromVector(eulerAngles));
+	lookAt = DirectX::XMVectorAdd(position, forwardVector);
+	upVector = DirectX::XMVector3Transform(DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), DirectX::XMMatrixRotationRollPitchYawFromVector(eulerAngles));
 }
 
 void Camera::SetRotation(float aroundX, float aroundY, float aroundZ)
 {
-	SetRotation(XMVectorSet(aroundX, aroundY, aroundZ, 0.f));
+	SetRotation(DirectX::XMVectorSet(aroundX, aroundY, aroundZ, 0.f));
 }
 
 void Camera::Translate(float x, float y, float z)
 {
-	XMFLOAT3 forward{}, up{}, left{};
+	DirectX::XMFLOAT3 forward{}, up{}, left{};
 	
-	XMStoreFloat3(&forward, forwardVector);
-	XMStoreFloat3(&up, upVector);
-	XMStoreFloat3(&left, XMVector3Cross(upVector, forwardVector));
+	DirectX::XMStoreFloat3(&forward, forwardVector);
+	DirectX::XMStoreFloat3(&up, upVector);
+	DirectX::XMStoreFloat3(&left, DirectX::XMVector3Cross(upVector, forwardVector));
 
-	const auto transformation = XMMatrixSet(
+	const auto transformation = DirectX::XMMatrixSet(
 		left.x, left.y, left.z, 0.f,
 		up.x, up.y, up.z, 0.f,
 		forward.x, forward.y, forward.z, 0.f,
 		0.f, 0.f, 0.f, 0.f
 	);
-	const auto translation = XMVector3Transform(XMVectorSet(x, y, z, 0.f), transformation);
-	position += translation;
+	const auto translation = DirectX::XMVector3Transform(DirectX::XMVectorSet(x, y, z, 0.f), transformation);
+	position = DirectX::XMVectorAdd(position, translation);
 	
-	lookAt = position + forwardVector;
+	lookAt = DirectX::XMVectorAdd(position, forwardVector);
 }
 
-void Camera::Rotate(XMVECTOR euler)
+void Camera::Rotate(DirectX::XMVECTOR euler)
 {
-	SetRotation(eulerAngles + euler);
+	SetRotation(DirectX::XMVectorAdd(eulerAngles, euler));
 }
 
 void Camera::Rotate(float aroundX, float aroundY, float aroundZ)
 {
-	SetRotation(eulerAngles + XMVectorSet(aroundX, aroundY, aroundZ, 0.f));
+	SetRotation(DirectX::XMVectorAdd(eulerAngles, DirectX::XMVectorSet(aroundX, aroundY, aroundZ, 0.f)));
 }

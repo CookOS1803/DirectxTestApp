@@ -11,12 +11,12 @@
 
 float sind(float a)
 {
-	return std::sin(a * (XM_PI / 180));
+	return std::sin(a * (DirectX::XM_PI / 180));
 }
 
 float cosd(float a)
 {
-	return std::cos(a * (XM_PI / 180));
+	return std::cos(a * (DirectX::XM_PI / 180));
 }
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -42,7 +42,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	auto loadedMesh = std::make_unique<Mesh>(wnd.Gfx());
 	loadedMesh->LoadFromFile(L"Padlock.obj");
 
-	const auto sine = std::sin(XM_PIDIV4);
+	const auto sine = std::sin(DirectX::XM_PIDIV4);
 
 	auto cylinderMesh = std::make_unique<Mesh>(wnd.Gfx());
 	cylinderMesh->SetVertices({
@@ -296,7 +296,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	obj->SetMesh(loadedMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
 	obj->GetTransform().scale = { 30.f, 30.f, 30.f };
-	obj->GetTransform().eulerRotation.x = -XM_PIDIV2;
+	obj->GetTransform().eulerRotation.x = -DirectX::XM_PIDIV2;
 	obj->SetUpdateable<CylinderMovement>();
 
 	obj = scene.CreateObject();

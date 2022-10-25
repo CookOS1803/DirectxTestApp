@@ -1,18 +1,18 @@
 #pragma once
 
 #include "NormWin.h"
-#include <xnamath.h>
+#include <DirectXMath.h>
 
 struct SimpleVertex
 {
 
-	SimpleVertex(XMFLOAT3 position, XMFLOAT3 color, XMFLOAT3 normal, XMFLOAT2 texCoord)
+	SimpleVertex(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 color, DirectX::XMFLOAT3 normal, DirectX::XMFLOAT2 texCoord)
 		: position(position), color(color), normal(normal), texCoord(texCoord)
 	{
 	}
-
-	XMFLOAT3 position;
-	XMFLOAT3 color;
-	XMFLOAT3 normal;
-	XMFLOAT2 texCoord;
+	
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 color;
+	DirectX::XMFLOAT3 normal;
+	DirectX::XMFLOAT2 texCoord;
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "NormWin.h"
-#include <D3DX11.h>
+#include <DirectXHelpers.h>
 
 class MeshRenderer
 {

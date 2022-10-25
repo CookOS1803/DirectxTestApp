@@ -1,12 +1,11 @@
 #pragma once
-#include <xnamath.h>
 
 struct Transform
 {
 	Transform() : position(), eulerRotation(), scale(1.f, 1.f, 1.f) {}
 
-	XMFLOAT3 position;
-	XMFLOAT3 eulerRotation;
-	XMFLOAT3 scale;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 eulerRotation;
+	DirectX::XMFLOAT3 scale;
 };
 

@@ -1,7 +1,5 @@
 #pragma once
 #include "NormWin.h"
-#include <d3d11.h>
-#include <xnamath.h>
 #include <vector>
 #include "Camera.h"
 #include "SimpleVertex.h"
@@ -11,38 +9,30 @@
 
 struct ConstantBuffer
 {
-	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
-	XMFLOAT4 lightDir[2];
-	XMFLOAT4 lightColor[2];
-	XMFLOAT4 outputColor;
+	DirectX::XMMATRIX world;
+	DirectX::XMMATRIX view;
+	DirectX::XMMATRIX projection;
+	DirectX::XMFLOAT4 lightDir[2];
+	DirectX::XMFLOAT4 lightColor[2];
+	DirectX::XMFLOAT4 outputColor;
 };
 
 struct VertexConstantBuffer
 {
-	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
+	DirectX::XMMATRIX world;
+	DirectX::XMMATRIX view;
+	DirectX::XMMATRIX projection;
 };
 
 struct PixelConstantBuffer
 {
-	XMFLOAT4 ambientlLight;
-	XMFLOAT4 directionalLight;
-	XMFLOAT4 lightDirection;
+	DirectX::XMFLOAT4 ambientlLight;
+	DirectX::XMFLOAT4 directionalLight;
+	DirectX::XMFLOAT4 lightDirection;
 };
 
 class Graphics
 {
-	struct GraphicObject
-	{
-		SceneObject* obj = nullptr;
-		XMMATRIX world;
-
-		GraphicObject(SceneObject* obj, XMMATRIX world)
-			: obj(obj), world(world) {}
-	};
 
 public:
 	Graphics(HWND hWnd, int width, int height);
@@ -55,8 +45,6 @@ public:
 	void Render(float t);
 	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
 	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<WORD>& newIndices);
-	void AddObject(SceneObject* obj);
-	void AddUIObject(SceneObject* obj);
 	void Draw(const SceneObject& obj);
 	void DrawUI(const SceneObject& obj);
 	
@@ -76,7 +64,7 @@ private:
 	void DefineAndCreateInputLayout(ID3DBlob* pVSBlob);
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void DrawOld(const SceneObject& o, XMMATRIX v, XMMATRIX proj);
+	void DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;
@@ -90,17 +78,14 @@ private:
 	std::unique_ptr<ID3D11SamplerState, DXDeleter<ID3D11SamplerState>> pSamplerLinear = nullptr;
 	ID3D11VertexShader* pVertexShader = nullptr;
 
-	XMMATRIX view;
-	XMMATRIX uiView;
-	XMMATRIX projection;
-	XMMATRIX uiProjection;
+	DirectX::XMMATRIX view;
+	DirectX::XMMATRIX uiView;
+	DirectX::XMMATRIX projection;
+	DirectX::XMMATRIX uiProjection;
 
 	Camera camera;
 	Camera uiCamera;
 
-	std::vector<GraphicObject> objects;
-	std::vector<GraphicObject> uiObjects;
-
-	XMFLOAT4 currentLightDir;
+	DirectX::XMFLOAT4 currentLightDir;
 };
 

@@ -51,7 +51,7 @@ void Mesh::LoadFromFile(std::wstring_view fileName)
 
     for (const auto& v : l_vertices)
     {
-        vertices.emplace_back(XMFLOAT3{ v.position.x, v.position.y, v.position.z }, XMFLOAT3{ 1.f, 1.f, 1.f }, XMFLOAT3{ v.normal.x, v.normal.y, v.normal.z }, XMFLOAT2{ v.texCoord.x, v.texCoord.y });
+        vertices.emplace_back(DirectX::XMFLOAT3{ v.position.x, v.position.y, v.position.z }, DirectX::XMFLOAT3{ 1.f, 1.f, 1.f }, DirectX::XMFLOAT3{ v.normal.x, v.normal.y, v.normal.z }, DirectX::XMFLOAT2{ v.texCoord.x, v.texCoord.y });
     }
 
     SetVertices(vertices);

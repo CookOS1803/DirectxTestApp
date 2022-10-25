@@ -12,12 +12,11 @@ public:
 	constexpr Scene(Graphics* gfx) : objects(), uiObjects(), pGfx(gfx) {}
 
 	constexpr const std::vector<std::unique_ptr<SceneObject>>& Objects() const noexcept { return objects; }
-	SceneObject* AddObject(const SceneObject& obj);
 	SceneObject* CreateObject();
 	SceneObject* CreateUIObject();
 
-	std::vector<std::unique_ptr<SceneObject>>& Objects() { return objects; }
-	std::vector<std::unique_ptr<SceneObject>>& UIObjects() { return uiObjects; }
+	constexpr std::vector<std::unique_ptr<SceneObject>>& Objects() { return objects; }
+	constexpr std::vector<std::unique_ptr<SceneObject>>& UIObjects() { return uiObjects; }
 
 private:
 

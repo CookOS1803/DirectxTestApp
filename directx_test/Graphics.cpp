@@ -1,11 +1,12 @@
 #include "Graphics.h"
-#include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <array>
 #include <cmath>
+#include <SpriteFont.h>
+#include <D3DX11tex.h>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
-	: camera(), objects(), uiCamera()
+	: camera(), uiCamera()
 {
 	CreateDeviceAndSwapChain(hWnd, width, height);
 	CreateRenderTargetView();
@@ -265,26 +266,11 @@ ID3D11Buffer* Graphics::CreateIndexBuffer(const std::vector<WORD>& indices)
 	HRESULT hr = pDevice->CreateBuffer(&bd, &InitData, &pIndexBuffer);
 	if (FAILED(hr))
 		exit(-3);
-
+	
 	return pIndexBuffer;
 
 }
 
-void Graphics::AddObject(SceneObject* obj)
-{
-	objects.emplace_back(
-		obj,
-		XMMatrixIdentity()
-	);
-}
-
-void Graphics::AddUIObject(SceneObject* obj)
-{
-	uiObjects.emplace_back(
-		obj,
-		XMMatrixIdentity()
-	);
-}
 
 void Graphics::Draw(const SceneObject& obj)
 {
@@ -328,8 +314,8 @@ void Graphics::InitializeMatrices(int width, int height)
 	uiCamera.SetPosition(0, 0, -5);
 
 	// Initialize the projection matrix
-	projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
-	uiProjection = XMMatrixOrthographicLH(width / 100, height / 100, 0.01f, 100.0f);
+	projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
+	uiProjection = DirectX::XMMatrixOrthographicLH(width / 100, height / 100, 0.01f, 100.0f);
 }
 
 HRESULT Graphics::CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -415,11 +401,11 @@ void Graphics::Render(float t)
 	pContext->PSSetShaderResources(0, 1, &tempRV);
 	pContext->PSSetSamplers(0, 1, &tempSampler);
 
-	uiView = XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
-	view = XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
+	uiView = DirectX::XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
+	view = DirectX::XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 }
 
-void Graphics::DrawOld(const SceneObject& o, XMMATRIX v, XMMATRIX proj)
+void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj)
 {
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
@@ -431,13 +417,13 @@ void Graphics::DrawOld(const SceneObject& o, XMMATRIX v, XMMATRIX proj)
 	const auto rot = o.GetTransform().eulerRotation;
 	const auto sc = o.GetTransform().scale;
 
-	const auto world = XMMatrixScaling(sc.x, sc.y, sc.z) * XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z) *
-		XMMatrixTranslation(pos.x, pos.y, pos.z);
+	const auto world = DirectX::XMMatrixScaling(sc.x, sc.y, sc.z) * DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z) *
+		DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 
 	VertexConstantBuffer vcb;
-	vcb.world = XMMatrixTranspose(world);
-	vcb.view = XMMatrixTranspose(v);
-	vcb.projection = XMMatrixTranspose(proj);
+	vcb.world = DirectX::XMMatrixTranspose(world);
+	vcb.view = DirectX::XMMatrixTranspose(v);
+	vcb.projection = DirectX::XMMatrixTranspose(proj);
 	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
 
 	PixelConstantBuffer pcb;

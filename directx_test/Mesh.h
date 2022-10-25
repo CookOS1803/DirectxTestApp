@@ -1,11 +1,11 @@
 #pragma once
 #include "NormWin.h"
-#include <d3dx11.h>
 #include <vector>
 #include <memory>
 #include <string_view>
 #include "SimpleVertex.h"
 #include "DXDeleter.h"
+#include <DirectXHelpers.h>
 
 class Mesh
 {
