@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Graphics.h"
+#include "loadmesh.h"
 
 Mesh::Mesh(const Mesh& other)
 {
@@ -36,4 +37,23 @@ Mesh& Mesh::operator=(const Mesh& other)
     m_indices = other.m_indices;
 
     return *this;
+}
+
+void Mesh::LoadFromFile(std::wstring_view fileName)
+{
+    std::vector<vertexload> l_vertices;
+    std::vector<WORD> indices;
+
+    lad(l_vertices, indices);
+
+    std::vector<SimpleVertex> vertices;
+    vertices.reserve(l_vertices.size());
+
+    for (const auto& v : l_vertices)
+    {
+        vertices.emplace_back(XMFLOAT3{ v.position.x, v.position.y, v.position.z }, XMFLOAT3{ 1.f, 1.f, 1.f }, XMFLOAT3{ v.normal.x, v.normal.y, v.normal.z }, XMFLOAT2{ v.texCoord.x, v.texCoord.y });
+    }
+
+    SetVertices(vertices);
+    SetIndices(indices);
 }

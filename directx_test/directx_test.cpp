@@ -9,7 +9,6 @@
 #include "CubeMovementTop.h"
 #include "CubeMovementBottom.h"
 
-
 float sind(float a)
 {
 	return std::sin(a * (XM_PI / 180));
@@ -39,6 +38,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	std::unique_ptr<ID3D11PixelShader, DXDeleter<ID3D11PixelShader>> psTexture;
 	psTexture.reset(wnd.Gfx()->CompileAndCreatePixelShader(L"Light.fx", "PSTexture", "ps_5_0"));
+
+	auto loadedMesh = std::make_unique<Mesh>(wnd.Gfx());
+	loadedMesh->LoadFromFile(L"Padlock.obj");
 
 	const auto sine = std::sin(XM_PIDIV4);
 
@@ -291,8 +293,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		});
 
 	auto obj = scene.CreateObject();
-	obj->SetMesh(cylinderMesh.get());
+	obj->SetMesh(loadedMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
+	obj->GetTransform().scale = { 30.f, 30.f, 30.f };
+	obj->GetTransform().eulerRotation.x = -XM_PIDIV2;
 	obj->SetUpdateable<CylinderMovement>();
 
 	obj = scene.CreateObject();

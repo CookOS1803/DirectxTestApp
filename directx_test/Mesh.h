@@ -3,6 +3,7 @@
 #include <d3dx11.h>
 #include <vector>
 #include <memory>
+#include <string_view>
 #include "SimpleVertex.h"
 #include "DXDeleter.h"
 
@@ -23,6 +24,8 @@ public:
 	void SetIndices(const std::vector<WORD>& indices);
 
 	Mesh& operator=(const Mesh& other);
+
+	void LoadFromFile(std::wstring_view fileName);
 
 private:
 
