@@ -6,14 +6,13 @@
 #include "SceneObject.h"
 #include "DXDeleter.h"
 #include "Timer.h"
+#include <SpriteFont.h>
 
 struct ConstantBuffer
 {
 	DirectX::XMMATRIX world;
 	DirectX::XMMATRIX view;
 	DirectX::XMMATRIX projection;
-	DirectX::XMFLOAT4 lightDir[2];
-	DirectX::XMFLOAT4 lightColor[2];
 	DirectX::XMFLOAT4 outputColor;
 };
 
@@ -43,6 +42,7 @@ public:
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
 	void Render(float t);
+	void DrawText();
 	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
 	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<WORD>& newIndices);
 	void Draw(const SceneObject& obj);
@@ -77,6 +77,7 @@ private:
 	std::unique_ptr<ID3D11ShaderResourceView, DXDeleter<ID3D11ShaderResourceView>> pTextureRV = nullptr;
 	std::unique_ptr<ID3D11SamplerState, DXDeleter<ID3D11SamplerState>> pSamplerLinear = nullptr;
 	ID3D11VertexShader* pVertexShader = nullptr;
+	ID3D11InputLayout* pVertexLayout = nullptr;
 
 	DirectX::XMMATRIX view;
 	DirectX::XMMATRIX uiView;
@@ -87,5 +88,9 @@ private:
 	Camera uiCamera;
 
 	DirectX::XMFLOAT4 currentLightDir;
+
+	std::unique_ptr<DirectX::SpriteFont> m_font = nullptr;
+	DirectX::XMVECTOR m_fontPos;
+	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 };
 

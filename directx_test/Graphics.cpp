@@ -2,8 +2,8 @@
 #include <d3dcompiler.h>
 #include <array>
 #include <cmath>
-#include <SpriteFont.h>
 #include <D3DX11tex.h>
+#include <DirectXColors.h>
 
 Graphics::Graphics(HWND hWnd, int width, int height)
 	: camera(), uiCamera()
@@ -21,7 +21,10 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	InitializeMatrices(width, height);
 	CreateTexture();
 
-	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	m_font = std::make_unique<DirectX::SpriteFont>(pDevice.get(), L"myfile.spritefont");
+	m_fontPos = { 600.f, 600.f };
+	m_spriteBatch = std::make_unique<DirectX::SpriteBatch>(pContext.get());
 }
 
 void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height)
@@ -201,13 +204,11 @@ void Graphics::DefineAndCreateInputLayout(ID3DBlob* pVSBlob)
 		D3D11_INPUT_ELEMENT_DESC{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, sizeof(SimpleVertex::position) + sizeof(SimpleVertex::color) + sizeof(SimpleVertex::normal), D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	
-	ID3D11InputLayout* pVertexLayout = nullptr;
 	HRESULT hr = pDevice->CreateInputLayout(layout.data(), layout.size(), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &pVertexLayout);
 	pVSBlob->Release();
 	if (FAILED(hr))
 		exit(-2);
 
-	pContext->IASetInputLayout(pVertexLayout);
 }
 
 ID3D11PixelShader* Graphics::CompileAndCreatePixelShader(std::wstring_view fileName, std::string_view shaderName, std::string_view shaderVersion)
@@ -387,7 +388,7 @@ void Graphics::Render(float t)
 	currentLightDir.z = std::cos(t);
 
 	ClearBuffer(0.5, 0.5, 0.5);
-	pContext->ClearDepthStencilView(pDepthStencilView.get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	pContext->ClearDepthStencilView(pDepthStencilView.get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	pContext->VSSetShader(pVertexShader, NULL, 0);
 	auto tempcb = pVertexConstantBuffer.get();
@@ -396,6 +397,9 @@ void Graphics::Render(float t)
 	tempcb = pPixelConstantBuffer.get();
 	pContext->PSSetConstantBuffers(0, 1, &tempcb);
 
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pContext->IASetInputLayout(pVertexLayout);
+
 	auto tempRV = pTextureRV.get();
 	auto tempSampler = pSamplerLinear.get();
 	pContext->PSSetShaderResources(0, 1, &tempRV);
@@ -403,6 +407,22 @@ void Graphics::Render(float t)
 
 	uiView = DirectX::XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	view = DirectX::XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
+
+
+}
+
+void Graphics::DrawText()
+{
+	m_spriteBatch->Begin();
+
+	const auto output = L"Hello World";
+
+	const auto origin = m_font->MeasureString(output);
+
+	m_font->DrawString(m_spriteBatch.get(), output,
+		m_fontPos, DirectX::Colors::White, 0.f, origin);
+
+	m_spriteBatch->End();
 }
 
 void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj)
@@ -420,13 +440,13 @@ void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMAT
 	const auto world = DirectX::XMMatrixScaling(sc.x, sc.y, sc.z) * DirectX::XMMatrixRotationRollPitchYaw(rot.x, rot.y, rot.z) *
 		DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 
-	VertexConstantBuffer vcb;
+	VertexConstantBuffer vcb{};
 	vcb.world = DirectX::XMMatrixTranspose(world);
 	vcb.view = DirectX::XMMatrixTranspose(v);
 	vcb.projection = DirectX::XMMatrixTranspose(proj);
 	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
 
-	PixelConstantBuffer pcb;
+	PixelConstantBuffer pcb{};
 	const auto al = .2f;
 	pcb.ambientlLight = { al, al, al, 1.f };
 	pcb.directionalLight = { 1.f, 1.f, 1.f, 1.f };

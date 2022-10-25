@@ -21,7 +21,10 @@ public:
 	constexpr ID3D11Buffer* IndexBuffer() const noexcept { return p_indexBuffer.get(); }
 
 	void SetVertices(const std::vector<SimpleVertex>& vertices);
+	void RecreateVertexBuffer();
 	void SetIndices(const std::vector<WORD>& indices);
+
+	void RecreateIndexBuffer();
 
 	Mesh& operator=(const Mesh& other);
 

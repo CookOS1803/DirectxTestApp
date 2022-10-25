@@ -456,6 +456,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				wnd.Gfx()->DrawUI(*o);
 			}
 
+			wnd.Gfx()->DrawText();
+
 			wnd.Gfx()->EndFrame();
 
 			t += delta;
