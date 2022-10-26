@@ -54,6 +54,9 @@ void Mesh::LoadFromFile(std::wstring_view fileName)
     WaveFrontReader<WORD> d;
     d.Load(fileName.data());
 
+    if (d.vertices.empty())
+        throw std::exception("asds");
+
     m_vertices.reserve(d.vertices.size());
         
     for (const auto& v : d.vertices)

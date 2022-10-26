@@ -293,11 +293,17 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		});
 
 	auto obj = scene.CreateObject();
+	obj->SetMesh(cylinderMesh.get());
+	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
+	obj->SetUpdateable<CylinderMovement>();
+
+	obj = scene.CreateObject();
 	obj->SetMesh(loadedMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
 	obj->GetTransform().scale = { 30.f, 30.f, 30.f };
 	obj->GetTransform().eulerRotation.x = -DirectX::XM_PIDIV2;
-	obj->SetUpdateable<CylinderMovement>();
+	obj->GetTransform().position = {4.f, 4.f, 4.f};
+
 
 	obj = scene.CreateObject();
 	obj->SetMesh(cubeMesh.get());
