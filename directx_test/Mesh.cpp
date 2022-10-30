@@ -53,25 +53,73 @@ void Mesh::Clear()
 
 void Mesh::MakeSphere(int slices, int stacks)
 {
+    assert(slices >= 3 && stacks >= 3);
+
     Clear();
 
-    SimpleVertex vertex{};
-    vertex.position = { 0.f, 1.f, 0.f };
-    auto topIndex = AddVertex(vertex);
+    std::vector<DirectX::XMVECTOR> positions;
+    positions.reserve((stacks - 1) * slices + 2);
 
-    for (int i = 0; i < stacks - 1; i++)
+    //positions.emplace_back(0.f, 1.f, 0.f);
+
+    for (int i = 1; i < stacks; i++)
     {
-        auto phi = DirectX::XM_PI * (i + 1) / stacks;
+        const auto phi = DirectX::XM_PI * i / stacks;
 
         for (int j = 0; j < slices; j++)
         {
-            auto theta = DirectX::XM_2PI * j / slices;
+            const auto theta = DirectX::XM_2PI * j / slices;
+            const auto sinphi = std::sin(phi);
 
-            auto x = std::sin(phi) * std::cos(theta);
-            auto y = std::cos(phi);
-            auto z = std::sin(phi) * std::sin(theta);
+            const auto x = sinphi * std::cos(theta);
+            const auto y = std::cos(phi);
+            const auto z = sinphi * std::sin(theta);
 
-            vertex.position = { x, y, z };
+            positions.emplace_back(x, y, z);
+        }
+    }
+
+    //positions.emplace_back(0.f, -1.f, 0.f);
+
+    const auto topPosition = DirectX::XMVECTOR{ 0.f, 1.f, 0.f };
+    const auto bottomPosition = DirectX::XMVECTOR{ 0.f, -1.f, 0.f };
+
+    SimpleVertex vertex{};
+    DirectX::XMStoreFloat3(&vertex.position, topPosition);
+
+    // top vertex
+    for (int j = 0; j < slices; j++)
+    {
+        const auto v1 = DirectX::XMVectorSubtract(topPosition, positions[j]);
+        const auto v2 = DirectX::XMVectorSubtract(positions[(j + 1) % slices], positions[j]);
+
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(v1, v2));
+
+        AddVertex(vertex);
+    }
+
+    // next to top vertices
+    for (int j = 0; j < slices; j++)
+    {
+        DirectX::XMStoreFloat3(&vertex.position, positions[j + slices]);
+
+        auto v1 = DirectX::XMVectorSubtract(topPosition, positions[j + slices]);
+        auto v2 = DirectX::XMVectorSubtract(positions[(j + 1) % slices], positions[j + slices]);
+
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(v1, v2));
+        AddVertex(vertex);
+        //...
+    }
+
+
+    for (int i = 1; i < stacks; i++)
+    {
+
+        for (int j = 0; j < slices; j++)
+        {
+            DirectX::XMStoreFloat3(&vertex.position, positions[j + i * slices]);
+
+
             AddVertex(vertex);
         }
     }
