@@ -24,7 +24,6 @@ void Mesh::SetVertices(const std::vector<SimpleVertex>& vertices)
 
 void Mesh::RecreateVertexBuffer()
 {
-    if (p_vertexBuffer) p_vertexBuffer->Release();
     p_vertexBuffer.reset(p_gfx->CreateVertexBuffer(m_vertices));
 }
 
@@ -37,8 +36,94 @@ void Mesh::SetIndices(const std::vector<WORD>& indices)
 
 void Mesh::RecreateIndexBuffer()
 {
-    if (p_indexBuffer) p_indexBuffer->Release();
     p_indexBuffer.reset(p_gfx->CreateIndexBuffer(m_indices));
+}
+
+void Mesh::Rebuild()
+{
+    RecreateVertexBuffer();
+    RecreateIndexBuffer();
+}
+
+void Mesh::Clear()
+{
+    p_vertexBuffer.reset();
+    p_indexBuffer.reset();
+}
+
+void Mesh::MakeSphere(int slices, int stacks)
+{
+    Clear();
+
+    SimpleVertex vertex{};
+    vertex.position = { 0.f, 1.f, 0.f };
+    auto topIndex = AddVertex(vertex);
+
+    for (int i = 0; i < stacks - 1; i++)
+    {
+        auto phi = DirectX::XM_PI * (i + 1) / stacks;
+
+        for (int j = 0; j < slices; j++)
+        {
+            auto theta = DirectX::XM_2PI * j / slices;
+
+            auto x = std::sin(phi) * std::cos(theta);
+            auto y = std::cos(phi);
+            auto z = std::sin(phi) * std::sin(theta);
+
+            vertex.position = { x, y, z };
+            AddVertex(vertex);
+        }
+    }
+
+    vertex.position = { 0.f, -1.f, 0.f };
+    auto bottomIndex = AddVertex(vertex);
+
+    for (int i = 0; i < slices; i++)
+    {
+        auto i0 = i + 1;
+        auto i1 = (i + 1) % slices + 1;
+        AddTriangle(topIndex, i1, i0);
+        i0 = i + slices * (stacks - 2) + 1;
+        i1 = (i + 1) % slices + slices * (stacks - 2) + 1;
+        AddTriangle(bottomIndex, i0, i1);
+    }
+
+    for (int j = 0; j < stacks - 2; j++)
+    {
+        auto j0 = j * slices + 1;
+        auto j1 = (j + 1) * slices + 1;
+        for (int i = 0; i < slices; i++)
+        {
+            auto i0 = j0 + i;
+            auto i1 = j0 + (i + 1) % slices;
+            auto i2 = j1 + (i + 1) % slices;
+            auto i3 = j1 + i;
+            AddQuad(i0, i1, i2, i3);
+        }
+    }
+
+    Rebuild();
+}
+
+int Mesh::AddVertex(SimpleVertex d)
+{
+    m_vertices.push_back(d);
+
+    return m_vertices.size() - 1;
+}
+
+void Mesh::AddTriangle(WORD i0, WORD i1, WORD i2)
+{
+    m_indices.push_back(i0);
+    m_indices.push_back(i1);
+    m_indices.push_back(i2);
+}
+
+void Mesh::AddQuad(WORD i0, WORD i1, WORD i2, WORD i3)
+{
+    AddTriangle(i0, i1, i2);
+    AddTriangle(i0, i2, i3);
 }
 
 Mesh& Mesh::operator=(const Mesh& other)
@@ -51,6 +136,8 @@ Mesh& Mesh::operator=(const Mesh& other)
 
 void Mesh::LoadFromFile(std::wstring_view fileName)
 {
+    Clear();
+
     WaveFrontReader<WORD> d;
     d.Load(fileName.data());
 

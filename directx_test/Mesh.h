@@ -23,8 +23,13 @@ public:
 	void SetVertices(const std::vector<SimpleVertex>& vertices);
 	void RecreateVertexBuffer();
 	void SetIndices(const std::vector<WORD>& indices);
-
 	void RecreateIndexBuffer();
+	void Rebuild();
+	void Clear();
+	void MakeSphere(int slices, int stacks);
+	int AddVertex(SimpleVertex d);
+	void AddTriangle(WORD i0, WORD i1, WORD i2);
+	void AddQuad(WORD i0, WORD i1, WORD i2, WORD i3);
 
 	Mesh& operator=(const Mesh& other);
 

@@ -1,6 +1,7 @@
 ﻿#include "NormWin.h"
 #include <sstream>
 #include <cmath>
+#include "mymath.h"
 #include "WindowsMessageMap.h"
 #include "Window.h"
 #include "SceneObject.h"
@@ -8,16 +9,6 @@
 #include "CylinderMovement.h"
 #include "CubeMovementTop.h"
 #include "CubeMovementBottom.h"
-
-float sind(float a)
-{
-	return std::sin(a * (DirectX::XM_PI / 180));
-}
-
-float cosd(float a)
-{
-	return std::cos(a * (DirectX::XM_PI / 180));
-}
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -292,6 +283,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		});
 
+	auto sphereMesh = std::make_unique<Mesh>(wnd.Gfx());
+	sphereMesh->MakeSphere(3, 3);
+
 	auto obj = scene.CreateObject();
 	obj->SetMesh(cylinderMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psTexture.get());
@@ -304,7 +298,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	obj->GetTransform().eulerRotation.x = -DirectX::XM_PIDIV2;
 	obj->GetTransform().position = {4.f, 4.f, 4.f};
 
-
 	obj = scene.CreateObject();
 	obj->SetMesh(cubeMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psLight.get());
@@ -316,6 +309,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	obj->GetMeshRenderer().SetPixelShader(psLight.get());
 	obj->GetTransform().scale = { 0.3f, 0.3f, 0.3f };
 	obj->SetUpdateable<CubeMovementBottom>();
+
+	obj = scene.CreateObject();
+	obj->SetMesh(sphereMesh.get());
+	obj->GetMeshRenderer().SetPixelShader(psLight.get());
+	obj->GetTransform().position = { -4.f, 4.f, 4.f };
 
 	auto pObject = scene.CreateUIObject();
 	pObject->SetMesh(cubeMesh.get());
