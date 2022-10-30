@@ -284,7 +284,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		});
 
 	auto sphereMesh = std::make_unique<Mesh>(wnd.Gfx());
-	sphereMesh->MakeSphere(3, 3);
+	sphereMesh->MakeSphere(10, 10);
 
 	auto obj = scene.CreateObject();
 	obj->SetMesh(cylinderMesh.get());
