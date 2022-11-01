@@ -16,20 +16,20 @@ public:
 	~Mesh();
 
 	constexpr const std::vector<SimpleVertex>& Vertices() const noexcept { return m_vertices; }
-	constexpr const std::vector<WORD>& Indices() const noexcept { return m_indices; }
+	constexpr const std::vector<UINT>& Indices() const noexcept { return m_indices; }
 	constexpr ID3D11Buffer* VertexBuffer() const noexcept { return p_vertexBuffer.get(); }
 	constexpr ID3D11Buffer* IndexBuffer() const noexcept { return p_indexBuffer.get(); }
 
 	void SetVertices(const std::vector<SimpleVertex>& vertices);
 	void RecreateVertexBuffer();
-	void SetIndices(const std::vector<WORD>& indices);
+	void SetIndices(const std::vector<UINT>& indices);
 	void RecreateIndexBuffer();
 	void Rebuild();
 	void Clear();
-	void MakeSphere(int slices, int stacks);
+	void MakeSphere(int slices, int stacks, DirectX::XMVECTORF32 color);
 	int AddVertex(SimpleVertex d);
-	void AddTriangle(WORD i0, WORD i1, WORD i2);
-	void AddQuad(WORD i0, WORD i1, WORD i2, WORD i3);
+	void AddTriangle(UINT i0, UINT i1, UINT i2);
+	void AddQuad(UINT i0, UINT i1, UINT i2, UINT i3);
 
 	Mesh& operator=(const Mesh& other);
 
@@ -40,7 +40,7 @@ private:
 	Graphics* p_gfx;
 
 	std::vector<SimpleVertex> m_vertices;
-	std::vector<WORD> m_indices;
+	std::vector<UINT> m_indices;
 
 	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> p_vertexBuffer = nullptr;
 	std::unique_ptr<ID3D11Buffer, DXDeleter<ID3D11Buffer>> p_indexBuffer = nullptr;

@@ -14,6 +14,7 @@ struct VertexShaderInput
 struct VertexShaderOutput
 {
 	float4 position : SV_POSITION;
+	float3 localpos : LOCALPOS;
 	float3 color : COLOR;
 	float3 normalModel : NORMALM;
 	float2 texCoord : TEXCOORD;
@@ -40,6 +41,7 @@ VertexShaderOutput VS(VertexShaderInput input)
 {
 	// Output structure
 	VertexShaderOutput output;
+	output.localpos = input.position.xyz;
 	// Get the input vertex, and include a W coordinate
 	float4 pos = float4(input.position.xyz, 1.0f);
 	// Apply transforms to that vertex
@@ -84,4 +86,9 @@ float4 PSSolid(VertexShaderOutput input) : SV_TARGET
 float4 PSTexture(VertexShaderOutput input) : SV_TARGET
 {
 	return txDiffuse.Sample(samLinear, input.texCoord) * PS(input); //* float4(input.color, 1);
+}
+
+float4 PSCustom(VertexShaderOutput input) : SV_TARGET
+{
+	return float4(float3(1, 1, 1) * sin(input.localpos.y * 50), 1) * PS(input);
 }

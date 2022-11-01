@@ -9,6 +9,7 @@
 #include "CylinderMovement.h"
 #include "CubeMovementTop.h"
 #include "CubeMovementBottom.h"
+#include "Rotator.h"
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -29,6 +30,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	std::unique_ptr<ID3D11PixelShader, DXDeleter<ID3D11PixelShader>> psTexture;
 	psTexture.reset(wnd.Gfx()->CompileAndCreatePixelShader(L"Light.fx", "PSTexture", "ps_5_0"));
+
+	std::unique_ptr<ID3D11PixelShader, DXDeleter<ID3D11PixelShader>> psCustom;
+	psCustom.reset(wnd.Gfx()->CompileAndCreatePixelShader(L"Light.fx", "PSCustom", "ps_5_0"));
 
 	auto loadedMesh = std::make_unique<Mesh>(wnd.Gfx());
 	loadedMesh->LoadFromFile(L"Padlock.obj");
@@ -284,9 +288,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		});
 
 	auto sphereMesh = std::make_unique<Mesh>(wnd.Gfx());
-	const int slices = 100, stacks = 100;
-	static_assert(slices >= 3 && stacks >= 3);
-	sphereMesh->MakeSphere(slices, stacks);
+	int slices = 10, stacks = 10;
+	auto sphereColor = DirectX::Colors::PeachPuff;
+	sphereMesh->MakeSphere(slices, stacks, sphereColor);
 
 	auto obj = scene.CreateObject();
 	obj->SetMesh(cylinderMesh.get());
@@ -316,7 +320,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	obj->SetMesh(sphereMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psLight.get());
 	obj->GetTransform().position = { -4.f, 4.f, 4.f };
-	//obj->GetTransform().eulerRotation.x = -DirectX::XM_PIDIV2;
+	obj->SetUpdateable<Rotator>();
 
 	auto pObject = scene.CreateUIObject();
 	pObject->SetMesh(cubeMesh.get());
@@ -435,6 +439,18 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 					break;
 				}
+				case Event::WheelUp:
+					slices++;
+					stacks++;
+					sphereMesh->MakeSphere(slices, stacks, sphereColor);
+
+					break;
+				case Event::WheelDown:
+					if (slices > 3) slices--;
+					if (stacks > 3) stacks--;
+					sphereMesh->MakeSphere(slices, stacks, sphereColor);
+
+					break;
 				default:
 					break;
 				}

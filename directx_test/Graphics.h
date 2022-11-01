@@ -8,14 +8,6 @@
 #include "Timer.h"
 #include <SpriteFont.h>
 
-struct ConstantBuffer
-{
-	DirectX::XMMATRIX world;
-	DirectX::XMMATRIX view;
-	DirectX::XMMATRIX projection;
-	DirectX::XMFLOAT4 outputColor;
-};
-
 struct VertexConstantBuffer
 {
 	DirectX::XMMATRIX world;
@@ -44,7 +36,7 @@ public:
 	void Render(float t);
 	void DrawText();
 	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
-	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<WORD>& newIndices);
+	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<UINT>& newIndices);
 	void Draw(const SceneObject& obj);
 	void DrawUI(const SceneObject& obj);
 	

@@ -27,7 +27,7 @@ void Mesh::RecreateVertexBuffer()
     p_vertexBuffer.reset(p_gfx->CreateVertexBuffer(m_vertices));
 }
 
-void Mesh::SetIndices(const std::vector<WORD>& indices)
+void Mesh::SetIndices(const std::vector<UINT>& indices)
 {
     m_indices = indices;
 
@@ -47,11 +47,13 @@ void Mesh::Rebuild()
 
 void Mesh::Clear()
 {
+    m_vertices.clear();
+    m_indices.clear();
     p_vertexBuffer.reset();
     p_indexBuffer.reset();
 }
 
-void Mesh::MakeSphere(int slices, int stacks)
+void Mesh::MakeSphere(int slices, int stacks, DirectX::XMVECTORF32 color)
 {
     Clear();
 
@@ -79,6 +81,7 @@ void Mesh::MakeSphere(int slices, int stacks)
     const auto bottomPosition = DirectX::XMVECTOR{ 0.f, -1.f, 0.f };
 
     SimpleVertex vertex{};
+    DirectX::XMStoreFloat3(&vertex.color, color);
     DirectX::XMStoreFloat3(&vertex.position, topPosition);
 
     // top vertex
@@ -187,7 +190,7 @@ void Mesh::MakeSphere(int slices, int stacks)
             4 * i + slices
         );
         
-        const WORD b = m_vertices.size() - slices;
+        const UINT b = m_vertices.size() - slices;
         AddTriangle(
             b + i,
             b - slices*4 + i * 4 + 3,
@@ -210,7 +213,7 @@ void Mesh::MakeSphere(int slices, int stacks)
     }
 
     wchar_t buf[16];
-    _itow_s(m_indices.size(), buf, 10);
+    _itow_s(m_vertices.size(), buf, 10);
     OutputDebugString(lstrcat(buf, L"\n"));
     Rebuild();
 }
@@ -222,14 +225,14 @@ int Mesh::AddVertex(SimpleVertex d)
     return m_vertices.size() - 1;
 }
 
-void Mesh::AddTriangle(WORD i0, WORD i1, WORD i2)
+void Mesh::AddTriangle(UINT i0, UINT i1, UINT i2)
 {
     m_indices.push_back(i0);
     m_indices.push_back(i1);
     m_indices.push_back(i2);
 }
 
-void Mesh::AddQuad(WORD i0, WORD i1, WORD i2, WORD i3)
+void Mesh::AddQuad(UINT i0, UINT i1, UINT i2, UINT i3)
 {
     AddTriangle(i0, i1, i2);
     AddTriangle(i0, i2, i3);
@@ -247,7 +250,7 @@ void Mesh::LoadFromFile(std::wstring_view fileName)
 {
     Clear();
 
-    WaveFrontReader<WORD> d;
+    WaveFrontReader<UINT> d;
     d.Load(fileName.data());
 
     if (d.vertices.empty())

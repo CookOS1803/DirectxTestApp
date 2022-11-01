@@ -252,11 +252,11 @@ ID3D11Buffer* Graphics::CreateVertexBuffer(const std::vector<SimpleVertex>& vert
 	return pVertexBuffer;
 }
 
-ID3D11Buffer* Graphics::CreateIndexBuffer(const std::vector<WORD>& indices)
+ID3D11Buffer* Graphics::CreateIndexBuffer(const std::vector<UINT>& indices)
 {
 	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * indices.size();
+	bd.ByteWidth = sizeof(UINT) * indices.size();
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
@@ -437,7 +437,7 @@ void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMAT
 	UINT offset = 0;
 	auto vb = o.GetMesh()->VertexBuffer();
 	pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-	pContext->IASetIndexBuffer(o.GetMesh()->IndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+	pContext->IASetIndexBuffer(o.GetMesh()->IndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
 	const auto pos = o.GetTransform().position;
 	const auto rot = o.GetTransform().eulerRotation;
