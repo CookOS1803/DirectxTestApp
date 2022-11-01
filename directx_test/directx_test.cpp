@@ -284,7 +284,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		});
 
 	auto sphereMesh = std::make_unique<Mesh>(wnd.Gfx());
-	sphereMesh->MakeSphere(10, 10);
+	const int slices = 100, stacks = 100;
+	static_assert(slices >= 3 && stacks >= 3);
+	sphereMesh->MakeSphere(slices, stacks);
 
 	auto obj = scene.CreateObject();
 	obj->SetMesh(cylinderMesh.get());
@@ -314,6 +316,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	obj->SetMesh(sphereMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psLight.get());
 	obj->GetTransform().position = { -4.f, 4.f, 4.f };
+	//obj->GetTransform().eulerRotation.x = -DirectX::XM_PIDIV2;
 
 	auto pObject = scene.CreateUIObject();
 	pObject->SetMesh(cubeMesh.get());

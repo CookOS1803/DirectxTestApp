@@ -53,8 +53,6 @@ void Mesh::Clear()
 
 void Mesh::MakeSphere(int slices, int stacks)
 {
-    assert(slices >= 3 && stacks >= 3);
-
     Clear();
 
     std::vector<DirectX::XMVECTOR> positions;
@@ -89,9 +87,10 @@ void Mesh::MakeSphere(int slices, int stacks)
         const auto up = DirectX::XMVectorSubtract(topPosition, positions[j]);
         const auto right = DirectX::XMVectorSubtract(positions[(j + 1) % slices], positions[j]);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, up));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, right));
 
         AddVertex(vertex);
+
     }
 
     // next to top vertices
@@ -104,16 +103,16 @@ void Mesh::MakeSphere(int slices, int stacks)
         const auto down = DirectX::XMVectorSubtract(positions[j + slices], positions[j]);
         const auto left = DirectX::XMVectorSubtract(positions[(j - 1 + slices) % slices], positions[j]);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, up));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, right));
         AddVertex(vertex);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, left));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(left, up));
         AddVertex(vertex);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(left, down));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(down, left));
         AddVertex(vertex);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(down, right));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, down));
         AddVertex(vertex);
     }
 
@@ -129,16 +128,16 @@ void Mesh::MakeSphere(int slices, int stacks)
             const auto down = DirectX::XMVectorSubtract(positions[j + (i + 1)*slices], positions[j + i * slices]);
             const auto left = DirectX::XMVectorSubtract(positions[(j - 1 + slices) % slices + i * slices], positions[j + i * slices]);
 
-            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, up));
+            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, right));
             AddVertex(vertex);
 
-            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, left));
+            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(left, up));
             AddVertex(vertex);
 
-            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(left, down));
+            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(down, left));
             AddVertex(vertex);
 
-            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(down, right));
+            DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, down));
             AddVertex(vertex);
         }
     }
@@ -146,25 +145,27 @@ void Mesh::MakeSphere(int slices, int stacks)
     // before bottom vertices
     for (int j = 0; j < slices; j++)
     {
-        DirectX::XMStoreFloat3(&vertex.position, positions[j]);
+        DirectX::XMStoreFloat3(&vertex.position, positions[j + (stacks - 2) * slices]);
 
         const auto up = DirectX::XMVectorSubtract(positions[j + (stacks - 3) * slices], positions[j + (stacks - 2) * slices]);
         const auto right = DirectX::XMVectorSubtract(positions[(j + 1) % slices + (stacks - 2) * slices], positions[j + (stacks - 2) * slices]);
         const auto down = DirectX::XMVectorSubtract(bottomPosition, positions[j + (stacks - 2) * slices]);
         const auto left = DirectX::XMVectorSubtract(positions[(j - 1 + slices) % slices + (stacks - 2) * slices], positions[j + (stacks - 2) * slices]);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, up));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, right));
         AddVertex(vertex);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, left));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(left, up));
         AddVertex(vertex);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(left, down));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(down, left));
         AddVertex(vertex);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(down, right));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, down));
         AddVertex(vertex);
     }
+
+    DirectX::XMStoreFloat3(&vertex.position, bottomPosition);
 
     // bottom vertex
     for (int j = 0; j < slices; j++)
@@ -172,33 +173,45 @@ void Mesh::MakeSphere(int slices, int stacks)
         const auto up = DirectX::XMVectorSubtract(positions[j + (stacks - 2) * slices], bottomPosition);
         const auto right = DirectX::XMVectorSubtract(positions[(j + 1) % slices + (stacks - 2) * slices], bottomPosition);
 
-        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(right, up));
+        DirectX::XMStoreFloat3(&vertex.normal, DirectX::XMVector3Cross(up, right));
 
         AddVertex(vertex);
-    }
+    }    
 
 
     for (int i = 0; i < slices; i++)
     {
-        AddTriangle(i, 4 * (i + 1) + slices, 4 * i + slices);
-        const auto b = (stacks - 1) * (slices - 1) + i;
-        AddTriangle(b, b - slices + 3 * (i + 1), b - slices + 3 * (i + 1) + 4);
+        AddTriangle(
+            i,
+            4 * ((i + 1) % slices) + slices + 1,
+            4 * i + slices
+        );
+        
+        const WORD b = m_vertices.size() - slices;
+        AddTriangle(
+            b + i,
+            b - slices*4 + i * 4 + 3,
+            b - slices * 4 + ((i + 1) % slices) * 4 + 2
+        );
     }
 
-    //for (int j = 0; j < stacks - 2; j++)
-    //{
-    //    auto j0 = j * slices + 1;
-    //    auto j1 = (j + 1) * slices + 1;
-    //    for (int i = 0; i < slices; i++)
-    //    {
-    //        auto i0 = j0 + i;
-    //        auto i1 = j0 + (i + 1) % slices;
-    //        auto i2 = j1 + (i + 1) % slices;
-    //        auto i3 = j1 + i;
-    //        AddQuad(i0, i1, i2, i3);
-    //    }
-    //}
 
+    for (int i = 0; i < stacks - 2; i++)
+    {
+        for (int j = 0; j < slices; j++)
+        {
+            AddQuad(
+                slices + 4*slices*i     + 4*j                + 3,
+                slices + 4*slices*i     + 4*((j + 1)%slices) + 2,
+                slices + 4*slices*(i+1) + 4 * ((j + 1) % slices) + 1,
+                slices + 4*slices*(i+1) + 4 * j
+            );
+        }
+    }
+
+    wchar_t buf[16];
+    _itow_s(m_indices.size(), buf, 10);
+    OutputDebugString(lstrcat(buf, L"\n"));
     Rebuild();
 }
 
