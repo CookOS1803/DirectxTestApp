@@ -11,13 +11,11 @@ Mesh::Mesh(const Mesh& other)
 
 Mesh::~Mesh()
 {
-    if (p_vertexBuffer) p_vertexBuffer->Release();
-    if (p_indexBuffer) p_indexBuffer->Release();
 }
 
 void Mesh::SetVertices(const std::vector<SimpleVertex>& vertices)
 {
-    m_vertices = vertices;
+    std::copy(vertices.begin(), vertices.end(), std::back_inserter(m_vertices));
 
     RecreateVertexBuffer();
 }
@@ -29,7 +27,7 @@ void Mesh::RecreateVertexBuffer()
 
 void Mesh::SetIndices(const std::vector<UINT>& indices)
 {
-    m_indices = indices;
+    std::copy(indices.begin(), indices.end(), std::back_inserter(m_indices));
 
     RecreateIndexBuffer();
 }

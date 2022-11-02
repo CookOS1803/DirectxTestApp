@@ -68,7 +68,11 @@ private:
 	std::unique_ptr<ID3D11DepthStencilView, DXDeleter<ID3D11DepthStencilView>> pDepthStencilView = nullptr;
 	std::unique_ptr<ID3D11ShaderResourceView, DXDeleter<ID3D11ShaderResourceView>> pTextureRV = nullptr;
 	std::unique_ptr<ID3D11SamplerState, DXDeleter<ID3D11SamplerState>> pSamplerLinear = nullptr;
+	std::unique_ptr<ID3D11ShaderResourceView, DXDeleter<ID3D11ShaderResourceView>> pSkyView = nullptr;
+	std::unique_ptr<ID3D11DepthStencilState, DXDeleter<ID3D11DepthStencilState>> DSLessEqual = nullptr;
+	std::unique_ptr<ID3D11RasterizerState, DXDeleter<ID3D11RasterizerState>> RSCullNone = nullptr;	
 	ID3D11VertexShader* pVertexShader = nullptr;
+	ID3D11VertexShader* skyVS = nullptr;
 	ID3D11InputLayout* pVertexLayout = nullptr;
 
 	DirectX::XMMATRIX view;
@@ -85,5 +89,9 @@ private:
 	DirectX::XMVECTOR m_fontPos;
 	std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
 	D3D11_VIEWPORT viewport;
+
+public:
+	Mesh* skyMesh = nullptr;
+	ID3D11PixelShader* skyPS = nullptr;
 };
 

@@ -1,4 +1,5 @@
 Texture2D txDiffuse : register(t0);
+TextureCube skymap : register(t1);
 SamplerState samLinear : register(s0);
 
 // Per-vertex data input to the vertex shader
@@ -91,4 +92,31 @@ float4 PSTexture(VertexShaderOutput input) : SV_TARGET
 float4 PSCustom(VertexShaderOutput input) : SV_TARGET
 {
 	return float4(float3(1, 1, 1) * sin(input.localpos.y * 50), 1) * PS(input);
+}
+
+struct SKYMAP_VS_OUTPUT    //output structure for skymap vertex shader
+{
+    float4 Pos : SV_POSITION;
+    float3 texCoord : TEXCOORD;
+};
+
+SKYMAP_VS_OUTPUT SKYMAP_VS(VertexShaderOutput input)
+{
+    SKYMAP_VS_OUTPUT output = (SKYMAP_VS_OUTPUT)0;
+	float4 pos = float4(input.position.xyz, 1.0f);
+	// Apply transforms to that vertex
+	pos = mul(pos, modelMatrix);
+	pos = mul(pos, viewMatrix);
+	pos = mul(pos, projectionMatrix);
+    //Set Pos to xyww instead of xyzw, so that z will always be 1 (furthest from camera)
+    output.Pos = pos.xyww;
+
+    output.texCoord = input.position; //pos;
+
+    return output;
+}
+
+float4 SkymapPShader(SKYMAP_VS_OUTPUT input) : SV_Target
+{
+    return skymap.Sample(samLinear, input.texCoord);
 }

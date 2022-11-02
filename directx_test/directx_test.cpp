@@ -34,6 +34,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	std::unique_ptr<ID3D11PixelShader, DXDeleter<ID3D11PixelShader>> psCustom;
 	psCustom.reset(wnd.Gfx()->CompileAndCreatePixelShader(L"Light.fx", "PSCustom", "ps_5_0"));
 
+	std::unique_ptr<ID3D11PixelShader, DXDeleter<ID3D11PixelShader>> psSky;
+	psSky.reset(wnd.Gfx()->CompileAndCreatePixelShader(L"Light.fx", "SkymapPShader", "ps_5_0"));
+
 	auto loadedMesh = std::make_unique<Mesh>(wnd.Gfx());
 	loadedMesh->LoadFromFile(L"Padlock.obj");
 
@@ -286,6 +289,31 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		23,20,22
 
 		});
+
+	//auto skyMesh = std::make_unique<Mesh>(*cubeMesh);
+	cubeMesh->SetIndices({
+		0,1,3,
+		3,1,2,
+
+		5,4,6,
+		6,4,7,
+
+		8,9,11,
+		11,9,10,
+
+		13,12,14,
+		14,12,15,
+
+		16,17,19,
+		19,17,18,
+
+		21,20,22,
+		22,20,23
+
+		});
+
+	wnd.Gfx()->skyPS = psSky.get();
+	wnd.Gfx()->skyMesh = cubeMesh.get();
 
 	auto sphereMesh = std::make_unique<Mesh>(wnd.Gfx());
 	int slices = 10, stacks = 10;

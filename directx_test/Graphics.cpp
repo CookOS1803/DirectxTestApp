@@ -25,6 +25,24 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	m_font = std::make_unique<DirectX::SpriteFont>(pDevice.get(), L"myfile.spritefont");
 	m_fontPos = { 600.f, 600.f };
 	m_spriteBatch = std::make_unique<DirectX::SpriteBatch>(pContext.get());
+
+
+
+	D3D11_DEPTH_STENCIL_DESC dssDesc;
+	ZeroMemory(&dssDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	dssDesc.DepthEnable = true;
+	dssDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dssDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+	D3D11_RASTERIZER_DESC cmdesc{};
+	cmdesc.CullMode = D3D11_CULL_NONE;
+	ID3D11RasterizerState* rs;
+	pDevice->CreateRasterizerState(&cmdesc, &rs);
+	RSCullNone.reset(rs);
+
+	ID3D11DepthStencilState* ds = nullptr;
+	pDevice->CreateDepthStencilState(&dssDesc, &ds);
+	DSLessEqual.reset(ds);
 }
 
 void Graphics::CreateDeviceAndSwapChain(const HWND& hWnd, int width, int height)
@@ -157,6 +175,30 @@ void Graphics::CreateTexture()
 		exit(-1);
 
 	pSamplerLinear.reset(tempSampler);
+
+
+	////
+
+	D3DX11_IMAGE_LOAD_INFO loadInfo;
+	loadInfo.MiscFlags = D3D11_RESOURCE_MISC_FLAG::D3D11_RESOURCE_MISC_TEXTURECUBE;
+	ID3D11Texture2D* tempSky = nullptr;
+	hr = D3DX11CreateTextureFromFile(pDevice.get(), L"cubemap.dds", &loadInfo, NULL, (ID3D11Resource**)&tempSky, NULL);
+	if (FAILED(hr))
+		throw 1;
+	D3D11_TEXTURE2D_DESC texDesc {};
+	tempSky->GetDesc(&texDesc);
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadDesc;
+	shadDesc.Format = texDesc.Format;
+	shadDesc.ViewDimension = D3D11_SRV_DIMENSION::D3D11_SRV_DIMENSION_TEXTURECUBE;
+	shadDesc.TextureCube.MipLevels = texDesc.MipLevels;
+	shadDesc.TextureCube.MostDetailedMip = 0;
+	tempRV = nullptr;
+	hr = pDevice->CreateShaderResourceView(tempSky, &shadDesc, &tempRV);
+	tempSky->Release();
+	if (FAILED(hr))
+		throw 1;
+
+	pSkyView.reset(tempRV);
 }
 
 void Graphics::InitializeViewport(int width, int height)
@@ -187,6 +229,26 @@ ID3DBlob* Graphics::CompileAndCreateVertexShader()
 	if (FAILED(hr))
 	{
 		pVSBlob->Release();
+		exit(-2);
+	}
+
+	////
+
+	ID3DBlob* bbb = nullptr;
+	hr = CompileShaderFromFile(L"Light.fx", "SKYMAP_VS", "vs_5_0", &bbb);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL,
+			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
+
+		exit(-1);
+	}
+
+	// Create the vertex shader
+	hr = pDevice->CreateVertexShader(bbb->GetBufferPointer(), bbb->GetBufferSize(), NULL, &skyVS);
+	if (FAILED(hr))
+	{
+		bbb->Release();
 		exit(-2);
 	}
 
@@ -389,7 +451,6 @@ void Graphics::Render(float t)
 	ClearBuffer(0.5, 0.5, 0.5);
 	pContext->ClearDepthStencilView(pDepthStencilView.get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	pContext->VSSetShader(pVertexShader, NULL, 0);
 	auto tempcb = pVertexConstantBuffer.get();
 	pContext->VSSetConstantBuffers(1, 1, &tempcb);
 
@@ -401,14 +462,28 @@ void Graphics::Render(float t)
 	pContext->RSSetViewports(1, &viewport);
 
 	auto tempRV = pTextureRV.get();
+	auto tempSky = pSkyView.get();
 	auto tempSampler = pSamplerLinear.get();
 	pContext->PSSetShaderResources(0, 1, &tempRV);
+	pContext->PSSetShaderResources(1, 1, &tempSky);
 	pContext->PSSetSamplers(0, 1, &tempSampler);
 
 	uiView = DirectX::XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	view = DirectX::XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
+	VertexConstantBuffer vcb{};
+	vcb.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(30, 30, 30) * DirectX::XMMatrixTranslationFromVector(camera.Position()));
+	vcb.view = DirectX::XMMatrixTranspose(view);
+	vcb.projection = DirectX::XMMatrixTranspose(projection);
+	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
+	pContext->VSSetShader(skyVS, NULL, 0);
+	pContext->PSSetShader(skyPS, NULL, 0);
+	pContext->OMSetDepthStencilState(DSLessEqual.get(), 0);
+	pContext->RSSetState(RSCullNone.get());
+	pContext->DrawIndexed(skyMesh->Indices().size(), 0, 0);
 
+	pContext->VSSetShader(pVertexShader, NULL, 0);
+	pContext->OMSetDepthStencilState(NULL, 0);
 }
 
 void Graphics::DrawText()
