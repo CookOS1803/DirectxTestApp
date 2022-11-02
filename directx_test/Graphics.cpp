@@ -376,7 +376,7 @@ void Graphics::InitializeMatrices(int width, int height)
 	uiCamera.SetPosition(0, 0, -5);
 
 	// Initialize the projection matrix
-	projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
+	projection = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, width / (FLOAT)height, 0.01f, 1000.0f);
 	uiProjection = DirectX::XMMatrixOrthographicLH(width / 100, height / 100, 0.01f, 100.0f);
 }
 
@@ -472,7 +472,7 @@ void Graphics::Render(float t)
 	view = DirectX::XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
 	VertexConstantBuffer vcb{};
-	vcb.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(30, 30, 30) * DirectX::XMMatrixTranslationFromVector(camera.Position()));
+	vcb.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(10, 10, 10) * DirectX::XMMatrixTranslationFromVector(camera.Position()));
 	vcb.view = DirectX::XMMatrixTranspose(view);
 	vcb.projection = DirectX::XMMatrixTranspose(projection);
 	pContext->UpdateSubresource(pVertexConstantBuffer.get(), 0, NULL, &vcb, 0, 0);
