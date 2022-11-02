@@ -71,7 +71,6 @@ private:
 	std::unique_ptr<ID3D11SamplerState, DXDeleter<ID3D11SamplerState>> pSamplerLinear = nullptr;
 	std::unique_ptr<ID3D11ShaderResourceView, DXDeleter<ID3D11ShaderResourceView>> pSkyView = nullptr;
 	std::unique_ptr<ID3D11DepthStencilState, DXDeleter<ID3D11DepthStencilState>> DSLessEqual = nullptr;
-	std::unique_ptr<ID3D11RasterizerState, DXDeleter<ID3D11RasterizerState>> RSCullNone = nullptr;	
 	ID3D11VertexShader* pVertexShader = nullptr;
 	ID3D11VertexShader* skyVS = nullptr;
 	ID3D11InputLayout* pVertexLayout = nullptr;

@@ -34,12 +34,6 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	dssDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	dssDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
-	D3D11_RASTERIZER_DESC cmdesc{};
-	cmdesc.CullMode = D3D11_CULL_NONE;
-	ID3D11RasterizerState* rs;
-	pDevice->CreateRasterizerState(&cmdesc, &rs);
-	RSCullNone.reset(rs);
-
 	ID3D11DepthStencilState* ds = nullptr;
 	pDevice->CreateDepthStencilState(&dssDesc, &ds);
 	DSLessEqual.reset(ds);
@@ -479,7 +473,6 @@ void Graphics::Render(float t)
 	pContext->VSSetShader(skyVS, NULL, 0);
 	pContext->PSSetShader(skyPS, NULL, 0);
 	pContext->OMSetDepthStencilState(DSLessEqual.get(), 0);
-	//pContext->RSSetState(RSCullNone.get());
 	pContext->DrawIndexed(skyMesh->Indices().size(), 0, 0);
 
 	pContext->VSSetShader(pVertexShader, NULL, 0);

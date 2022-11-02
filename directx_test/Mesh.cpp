@@ -66,7 +66,7 @@ void Mesh::MakeSphere(int slices, int stacks, DirectX::XMVECTORF32 color)
         {
             float dist = 1.f;
 
-            if (stacks % 2 == 0 and i - 1 == (stacks - 1) / 2)
+            if (i - 1 == (stacks - 1) / 2)
                 dist = 0.2f;
 
             const auto theta = DirectX::XM_2PI * j / slices;
