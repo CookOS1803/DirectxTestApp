@@ -35,6 +35,7 @@ cbuffer PixelShaderConstantBuffer : register(b0)
 	float4 ambientLight;
 	float4 directionalLight;
 	float4 lightDirection;
+	float sine;
 };
 
 // Called for each vertex
@@ -93,6 +94,12 @@ float4 PSCustom(VertexShaderOutput input) : SV_TARGET
 {
 	return float4(float3(1, 1, 1) * sin(input.localpos.y * 50), 1) * PS(input);
 }
+//float4 PSCustom2(VertexShaderOutput input) : SV_TARGET
+//{
+//	if (input.localpos.y > sine - 0.)
+//	return float4(float3(1, 1, 1) * sin(input.localpos.y * 50), 1) * PS(input);
+//}
+
 
 struct SKYMAP_VS_OUTPUT    //output structure for skymap vertex shader
 {

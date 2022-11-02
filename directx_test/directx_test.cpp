@@ -346,9 +346,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	obj = scene.CreateObject();
 	obj->SetMesh(sphereMesh.get());
-	obj->GetMeshRenderer().SetPixelShader(psLight.get());
+	obj->GetMeshRenderer().SetPixelShader(psCustom.get());
 	obj->GetTransform().position = { -4.f, 4.f, 4.f };
-	obj->SetUpdateable<Rotator>();
+	//obj->SetUpdateable<Rotator>();
 
 	auto pObject = scene.CreateUIObject();
 	pObject->SetMesh(cubeMesh.get());
@@ -498,7 +498,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				if (o->GetUpdateable() != nullptr)
 					o->GetUpdateable()->Update(delta);
 
-				wnd.Gfx()->Draw(*o);
+				wnd.Gfx()->Draw(*o, t);
 			}
 
 			for (const auto& o : scene.UIObjects())
@@ -506,7 +506,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				if (o->GetUpdateable() != nullptr)
 					o->GetUpdateable()->Update(delta);
 
-				wnd.Gfx()->DrawUI(*o);
+				wnd.Gfx()->DrawUI(*o, t);
 			}
 
 			if (ttt)

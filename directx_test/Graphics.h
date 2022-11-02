@@ -20,6 +20,7 @@ struct PixelConstantBuffer
 	DirectX::XMFLOAT4 ambientlLight;
 	DirectX::XMFLOAT4 directionalLight;
 	DirectX::XMFLOAT4 lightDirection;
+	//float sine = 0.f;
 };
 
 class Graphics
@@ -37,8 +38,8 @@ public:
 	void DrawText();
 	[[nodiscard]] ID3D11Buffer* CreateVertexBuffer(const std::vector<SimpleVertex>& newVertices);
 	[[nodiscard]] ID3D11Buffer* CreateIndexBuffer(const std::vector<UINT>& newIndices);
-	void Draw(const SceneObject& obj);
-	void DrawUI(const SceneObject& obj);
+	void Draw(const SceneObject& obj, float t);
+	void DrawUI(const SceneObject& obj, float t);
 	
 	constexpr Camera& GetCamera() noexcept {return camera;}
 
@@ -56,7 +57,7 @@ private:
 	void DefineAndCreateInputLayout(ID3DBlob* pVSBlob);
 	void CreateConstantBuffer();
 	void InitializeMatrices(int width, int height);
-	void DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj);
+	void DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj, float t);
 
 	std::unique_ptr<ID3D11Device, DXDeleter<ID3D11Device>> pDevice = nullptr;
 	std::unique_ptr<IDXGISwapChain, DXDeleter<IDXGISwapChain>> pSwap = nullptr;

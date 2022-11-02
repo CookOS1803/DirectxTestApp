@@ -64,12 +64,17 @@ void Mesh::MakeSphere(int slices, int stacks, DirectX::XMVECTORF32 color)
 
         for (int j = 0; j < slices; j++)
         {
+            float dist = 1.f;
+
+            if (stacks % 2 == 0 and i - 1 == (stacks - 1) / 2)
+                dist = 0.2f;
+
             const auto theta = DirectX::XM_2PI * j / slices;
             const auto sinphi = std::sin(phi);
 
-            const auto x = sinphi * std::cos(theta);
+            const auto x = sinphi * std::cos(theta) * dist;
             const auto y = std::cos(phi);
-            const auto z = sinphi * std::sin(theta);
+            const auto z = sinphi * std::sin(theta) * dist;
 
             positions.push_back(DirectX::XMVectorSet(x, y, z, 0.f));
         }

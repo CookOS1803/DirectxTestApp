@@ -334,14 +334,14 @@ ID3D11Buffer* Graphics::CreateIndexBuffer(const std::vector<UINT>& indices)
 }
 
 
-void Graphics::Draw(const SceneObject& obj)
+void Graphics::Draw(const SceneObject& obj, float t)
 {
-	DrawOld(obj, view, projection);
+	DrawOld(obj, view, projection, t);
 }
 
-void Graphics::DrawUI(const SceneObject& obj)
+void Graphics::DrawUI(const SceneObject& obj, float t)
 {
-	DrawOld(obj, uiView, uiProjection);
+	DrawOld(obj, uiView, uiProjection, t);
 }
 
 void Graphics::CreateConstantBuffer()
@@ -479,7 +479,7 @@ void Graphics::Render(float t)
 	pContext->VSSetShader(skyVS, NULL, 0);
 	pContext->PSSetShader(skyPS, NULL, 0);
 	pContext->OMSetDepthStencilState(DSLessEqual.get(), 0);
-	pContext->RSSetState(RSCullNone.get());
+	//pContext->RSSetState(RSCullNone.get());
 	pContext->DrawIndexed(skyMesh->Indices().size(), 0, 0);
 
 	pContext->VSSetShader(pVertexShader, NULL, 0);
@@ -506,7 +506,7 @@ void Graphics::DrawText()
 	pContext->OMSetDepthStencilState(st, sten);
 }
 
-void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj)
+void Graphics::DrawOld(const SceneObject& o, DirectX::XMMATRIX v, DirectX::XMMATRIX proj, float t)
 {
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;

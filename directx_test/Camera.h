@@ -15,10 +15,10 @@ public:
 	void Rotate(DirectX::XMVECTOR euler);
 	void Rotate(float aroundX, float aroundY, float aroundZ);
 
-	constexpr DirectX::XMVECTOR Position() const noexcept {return position;}
-	constexpr DirectX::XMVECTOR LookAt() const noexcept {return lookAt;}
-	constexpr DirectX::XMVECTOR UpVector() const noexcept {return upVector;}
-	constexpr DirectX::XMVECTOR ForwardVector() const noexcept {return forwardVector;}
+	[[nodiscard]] constexpr DirectX::XMVECTOR Position() const noexcept {return position;}
+	[[nodiscard]] constexpr DirectX::XMVECTOR LookAt() const noexcept {return lookAt;}
+	[[nodiscard]] constexpr DirectX::XMVECTOR UpVector() const noexcept {return upVector;}
+	[[nodiscard]] constexpr DirectX::XMVECTOR ForwardVector() const noexcept {return forwardVector;}
 
 private:
 
