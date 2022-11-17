@@ -35,7 +35,7 @@ cbuffer PixelShaderConstantBuffer : register(b0)
 	float4 ambientLight;
 	float4 directionalLight;
 	float4 lightDirection;
-	float sine;
+	//float sine;
 };
 
 // Called for each vertex
