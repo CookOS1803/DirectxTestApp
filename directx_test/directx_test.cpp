@@ -290,8 +290,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		});
 
-	//auto skyMesh = std::make_unique<Mesh>(*cubeMesh);
-	cubeMesh->SetIndices({
+	auto skyMesh = std::make_unique<Mesh>(*cubeMesh);
+	skyMesh->SetIndices({
 		0,1,3,
 		3,1,2,
 
@@ -313,7 +313,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		});
 
 	wnd.Gfx()->skyPS = psSky.get();
-	wnd.Gfx()->skyMesh = cubeMesh.get();
+	wnd.Gfx()->skyMesh = skyMesh.get();
 
 	auto sphereMesh = std::make_unique<Mesh>(wnd.Gfx());
 	int slices = 10, stacks = 10;
@@ -497,18 +497,18 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			{
 				if (o->GetUpdateable() != nullptr)
 					o->GetUpdateable()->Update(delta);
-
+			
 				wnd.Gfx()->Draw(*o, t);
 			}
-
+			
 			for (const auto& o : scene.UIObjects())
 			{
 				if (o->GetUpdateable() != nullptr)
 					o->GetUpdateable()->Update(delta);
-
+			
 				wnd.Gfx()->DrawUI(*o, t);
 			}
-
+			
 			if (ttt)
 				wnd.Gfx()->DrawText();
 

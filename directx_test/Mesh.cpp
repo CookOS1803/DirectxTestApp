@@ -15,6 +15,7 @@ Mesh::~Mesh()
 
 void Mesh::SetVertices(const std::vector<SimpleVertex>& vertices)
 {
+    m_vertices.clear();
     std::copy(vertices.begin(), vertices.end(), std::back_inserter(m_vertices));
 
     RecreateVertexBuffer();
@@ -27,6 +28,7 @@ void Mesh::RecreateVertexBuffer()
 
 void Mesh::SetIndices(const std::vector<UINT>& indices)
 {
+    m_indices.clear();
     std::copy(indices.begin(), indices.end(), std::back_inserter(m_indices));
 
     RecreateIndexBuffer();

@@ -26,7 +26,7 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 	m_fontPos = { 600.f, 600.f };
 	m_spriteBatch = std::make_unique<DirectX::SpriteBatch>(pContext.get());
 
-
+	// skybox
 
 	D3D11_DEPTH_STENCIL_DESC dssDesc;
 	ZeroMemory(&dssDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
@@ -171,7 +171,7 @@ void Graphics::CreateTexture()
 	pSamplerLinear.reset(tempSampler);
 
 
-	////
+	// skybox
 
 	D3DX11_IMAGE_LOAD_INFO loadInfo;
 	loadInfo.MiscFlags = D3D11_RESOURCE_MISC_FLAG::D3D11_RESOURCE_MISC_TEXTURECUBE;
@@ -181,7 +181,7 @@ void Graphics::CreateTexture()
 		throw 1;
 	D3D11_TEXTURE2D_DESC texDesc {};
 	tempSky->GetDesc(&texDesc);
-	D3D11_SHADER_RESOURCE_VIEW_DESC shadDesc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadDesc{};
 	shadDesc.Format = texDesc.Format;
 	shadDesc.ViewDimension = D3D11_SRV_DIMENSION::D3D11_SRV_DIMENSION_TEXTURECUBE;
 	shadDesc.TextureCube.MipLevels = texDesc.MipLevels;
@@ -465,6 +465,12 @@ void Graphics::Render(float t)
 	uiView = DirectX::XMMatrixLookAtLH(uiCamera.Position(), uiCamera.LookAt(), uiCamera.UpVector());
 	view = DirectX::XMMatrixLookAtLH(camera.Position(), camera.LookAt(), camera.UpVector());
 
+	// skybox
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	auto vb = skyMesh->VertexBuffer();
+	pContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+	pContext->IASetIndexBuffer(skyMesh->IndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 	VertexConstantBuffer vcb{};
 	vcb.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixScaling(10, 10, 10) * DirectX::XMMatrixTranslationFromVector(camera.Position()));
 	vcb.view = DirectX::XMMatrixTranspose(view);
