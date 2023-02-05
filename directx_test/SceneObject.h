@@ -16,7 +16,7 @@ class SceneObject
 public:
 
 	SceneObject() : p_mesh(nullptr) {}
-	SceneObject(const SceneObject& other);
+	SceneObject(const SceneObject& other) = delete;
 
 	constexpr const Mesh* GetMesh() const noexcept { return p_mesh; }
 	constexpr void SetMesh(Mesh* newMesh) noexcept { p_mesh = newMesh; }
