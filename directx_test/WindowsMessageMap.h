@@ -2,6 +2,7 @@
 
 #include "NormWin.h"
 #include <unordered_map>
+#include <string>
 
 class WindowsMessageMap
 {

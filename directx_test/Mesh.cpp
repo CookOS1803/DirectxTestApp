@@ -68,9 +68,6 @@ void Mesh::MakeSphere(int slices, int stacks, DirectX::XMVECTORF32 color)
         {
             float dist = 1.f;
 
-            if (i - 1 == (stacks - 1) / 2)
-                dist = 0.2f;
-
             const auto theta = DirectX::XM_2PI * j / slices;
             const auto sinphi = std::sin(phi);
 
