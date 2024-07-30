@@ -16,7 +16,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	Timer timer;
 	float t = 0.f;
 
-	Window wnd(1600, 900, L"nu window");
+	Window wnd(1600, 900, L"window");
 
 	//wnd.mouse.EnableRaw();
 
@@ -348,7 +348,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	obj->SetMesh(sphereMesh.get());
 	obj->GetMeshRenderer().SetPixelShader(psCustom.get());
 	obj->GetTransform().position = { -4.f, 4.f, 4.f };
-	//obj->SetUpdateable<Rotator>();
+	obj->SetUpdateable<Rotator>();
 
 	auto pObject = scene.CreateUIObject();
 	pObject->SetMesh(cubeMesh.get());
